@@ -1,0 +1,1102 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 13,
+    "identityHash": "3989271a648e18483417b314a23dbc1e",
+    "entities": [
+      {
+        "tableName": "users",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT NOT NULL, `displayName` TEXT NOT NULL, `passwordHash` TEXT NOT NULL, `passwordSalt` TEXT NOT NULL, `pinHash` TEXT, `pinSalt` TEXT, `role` TEXT NOT NULL, `active` INTEGER NOT NULL, `mustChangePin` INTEGER NOT NULL, `createdByUserId` INTEGER, `themeTone` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "displayName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "passwordHash",
+            "columnName": "passwordHash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "passwordSalt",
+            "columnName": "passwordSalt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pinHash",
+            "columnName": "pinHash",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pinSalt",
+            "columnName": "pinSalt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mustChangePin",
+            "columnName": "mustChangePin",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdByUserId",
+            "columnName": "createdByUserId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "themeTone",
+            "columnName": "themeTone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_users_username",
+            "unique": true,
+            "columnNames": [
+              "username"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_users_username` ON `${TABLE_NAME}` (`username`)"
+          }
+        ]
+      },
+      {
+        "tableName": "audit_log",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` INTEGER NOT NULL, `userId` INTEGER, `username` TEXT NOT NULL, `action` TEXT NOT NULL, `detail` TEXT, `success` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action",
+            "columnName": "action",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "detail",
+            "columnName": "detail",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "success",
+            "columnName": "success",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "cash_sessions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `operatorId` INTEGER NOT NULL, `operatorUsername` TEXT NOT NULL, `openingBalanceCents` INTEGER NOT NULL, `openedAt` INTEGER NOT NULL, `closedAt` INTEGER, `expectedCashCents` INTEGER, `informedCashCents` INTEGER, `divergenceCents` INTEGER, `status` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorId",
+            "columnName": "operatorId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorUsername",
+            "columnName": "operatorUsername",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "openingBalanceCents",
+            "columnName": "openingBalanceCents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "openedAt",
+            "columnName": "openedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "closedAt",
+            "columnName": "closedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "expectedCashCents",
+            "columnName": "expectedCashCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "informedCashCents",
+            "columnName": "informedCashCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "divergenceCents",
+            "columnName": "divergenceCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "cash_movements",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `cashSessionId` INTEGER NOT NULL, `type` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `reason` TEXT NOT NULL, `operatorId` INTEGER NOT NULL, `operatorUsername` TEXT NOT NULL, `authorizedByUsername` TEXT, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`cashSessionId`) REFERENCES `cash_sessions`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cashSessionId",
+            "columnName": "cashSessionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amountCents",
+            "columnName": "amountCents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorId",
+            "columnName": "operatorId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorUsername",
+            "columnName": "operatorUsername",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "authorizedByUsername",
+            "columnName": "authorizedByUsername",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cash_movements_cashSessionId",
+            "unique": false,
+            "columnNames": [
+              "cashSessionId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cash_movements_cashSessionId` ON `${TABLE_NAME}` (`cashSessionId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "cash_sessions",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cashSessionId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "products",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `priceCents` INTEGER NOT NULL, `category` TEXT, `active` INTEGER NOT NULL, `stockQuantity` INTEGER NOT NULL, `minStockAlert` INTEGER, `allowSaleWithoutStock` INTEGER NOT NULL, `barcode` TEXT, `imagePath` TEXT, `remoteId` TEXT, `imageUrl` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceCents",
+            "columnName": "priceCents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stockQuantity",
+            "columnName": "stockQuantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minStockAlert",
+            "columnName": "minStockAlert",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "allowSaleWithoutStock",
+            "columnName": "allowSaleWithoutStock",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "imagePath",
+            "columnName": "imagePath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "imageUrl",
+            "columnName": "imageUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_products_active",
+            "unique": false,
+            "columnNames": [
+              "active"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_products_active` ON `${TABLE_NAME}` (`active`)"
+          },
+          {
+            "name": "index_products_barcode",
+            "unique": true,
+            "columnNames": [
+              "barcode"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_products_barcode` ON `${TABLE_NAME}` (`barcode`)"
+          }
+        ]
+      },
+      {
+        "tableName": "sales",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `cashSessionId` INTEGER NOT NULL, `operatorId` INTEGER NOT NULL, `operatorUsername` TEXT NOT NULL, `status` TEXT NOT NULL, `customerId` INTEGER, `discountPercent` INTEGER NOT NULL, `loyaltyDiscountCents` INTEGER NOT NULL, `cancellationReason` TEXT, `terminalNameSnapshot` TEXT, `storeNameSnapshot` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`cashSessionId`) REFERENCES `cash_sessions`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cashSessionId",
+            "columnName": "cashSessionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorId",
+            "columnName": "operatorId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorUsername",
+            "columnName": "operatorUsername",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "customerId",
+            "columnName": "customerId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "discountPercent",
+            "columnName": "discountPercent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "loyaltyDiscountCents",
+            "columnName": "loyaltyDiscountCents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cancellationReason",
+            "columnName": "cancellationReason",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "terminalNameSnapshot",
+            "columnName": "terminalNameSnapshot",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "storeNameSnapshot",
+            "columnName": "storeNameSnapshot",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_sales_cashSessionId",
+            "unique": false,
+            "columnNames": [
+              "cashSessionId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sales_cashSessionId` ON `${TABLE_NAME}` (`cashSessionId`)"
+          },
+          {
+            "name": "index_sales_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sales_status` ON `${TABLE_NAME}` (`status`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "cash_sessions",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cashSessionId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "sale_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `saleId` INTEGER NOT NULL, `productId` INTEGER NOT NULL, `productName` TEXT NOT NULL, `unitPriceCents` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, FOREIGN KEY(`saleId`) REFERENCES `sales`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`productId`) REFERENCES `products`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "saleId",
+            "columnName": "saleId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productId",
+            "columnName": "productId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productName",
+            "columnName": "productName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unitPriceCents",
+            "columnName": "unitPriceCents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_sale_items_saleId",
+            "unique": false,
+            "columnNames": [
+              "saleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_items_saleId` ON `${TABLE_NAME}` (`saleId`)"
+          },
+          {
+            "name": "index_sale_items_productId",
+            "unique": false,
+            "columnNames": [
+              "productId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_items_productId` ON `${TABLE_NAME}` (`productId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "sales",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "saleId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "products",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "productId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "sale_outbox",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `saleId` INTEGER NOT NULL, `transactionUuid` TEXT NOT NULL, `payload` TEXT NOT NULL, `status` TEXT NOT NULL, `attempts` INTEGER NOT NULL, `lastError` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "saleId",
+            "columnName": "saleId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transactionUuid",
+            "columnName": "transactionUuid",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attempts",
+            "columnName": "attempts",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastError",
+            "columnName": "lastError",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_sale_outbox_saleId",
+            "unique": true,
+            "columnNames": [
+              "saleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_sale_outbox_saleId` ON `${TABLE_NAME}` (`saleId`)"
+          },
+          {
+            "name": "index_sale_outbox_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sale_outbox_status` ON `${TABLE_NAME}` (`status`)"
+          }
+        ]
+      },
+      {
+        "tableName": "payments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `saleId` INTEGER NOT NULL, `method` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `receivedCents` INTEGER, `changeCents` INTEGER, `status` TEXT NOT NULL, `transactionId` TEXT, `declineReason` TEXT, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`saleId`) REFERENCES `sales`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "saleId",
+            "columnName": "saleId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "method",
+            "columnName": "method",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amountCents",
+            "columnName": "amountCents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receivedCents",
+            "columnName": "receivedCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "changeCents",
+            "columnName": "changeCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transactionId",
+            "columnName": "transactionId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "declineReason",
+            "columnName": "declineReason",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_payments_saleId",
+            "unique": false,
+            "columnNames": [
+              "saleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_payments_saleId` ON `${TABLE_NAME}` (`saleId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "sales",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "saleId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "customers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `phone` TEXT NOT NULL, `document` TEXT, `active` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phone",
+            "columnName": "phone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "document",
+            "columnName": "document",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_customers_phone",
+            "unique": true,
+            "columnNames": [
+              "phone"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_customers_phone` ON `${TABLE_NAME}` (`phone`)"
+          }
+        ]
+      },
+      {
+        "tableName": "loyalty_configs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `mode` TEXT NOT NULL, `pointsPerCurrencyUnit` REAL, `pointValueInCents` INTEGER, `visitsRequired` INTEGER, `discountPercentOnReward` INTEGER, `activatedAt` INTEGER NOT NULL, `deactivatedAt` INTEGER, `changedByUserId` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mode",
+            "columnName": "mode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pointsPerCurrencyUnit",
+            "columnName": "pointsPerCurrencyUnit",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "pointValueInCents",
+            "columnName": "pointValueInCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "visitsRequired",
+            "columnName": "visitsRequired",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "discountPercentOnReward",
+            "columnName": "discountPercentOnReward",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "activatedAt",
+            "columnName": "activatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deactivatedAt",
+            "columnName": "deactivatedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "changedByUserId",
+            "columnName": "changedByUserId",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "loyalty_transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `customerId` INTEGER NOT NULL, `saleId` INTEGER, `mode` TEXT NOT NULL, `type` TEXT NOT NULL, `points` INTEGER, `amountCents` INTEGER, `timestamp` INTEGER NOT NULL, FOREIGN KEY(`customerId`) REFERENCES `customers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`saleId`) REFERENCES `sales`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "customerId",
+            "columnName": "customerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "saleId",
+            "columnName": "saleId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "mode",
+            "columnName": "mode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "points",
+            "columnName": "points",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "amountCents",
+            "columnName": "amountCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_loyalty_transactions_customerId",
+            "unique": false,
+            "columnNames": [
+              "customerId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_loyalty_transactions_customerId` ON `${TABLE_NAME}` (`customerId`)"
+          },
+          {
+            "name": "index_loyalty_transactions_saleId",
+            "unique": false,
+            "columnNames": [
+              "saleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_loyalty_transactions_saleId` ON `${TABLE_NAME}` (`saleId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "customers",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "customerId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "sales",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "saleId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "terminal_config",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `terminalName` TEXT NOT NULL, `storeName` TEXT NOT NULL, `environment` TEXT NOT NULL, `printerType` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `updatedByUserId` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "terminalName",
+            "columnName": "terminalName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "storeName",
+            "columnName": "storeName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "environment",
+            "columnName": "environment",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "printerType",
+            "columnName": "printerType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedByUserId",
+            "columnName": "updatedByUserId",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3989271a648e18483417b314a23dbc1e')"
+    ]
+  }
+}

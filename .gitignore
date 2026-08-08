@@ -1,0 +1,31 @@
+*.iml
+.gradle/
+.claude/
+build/
+.kotlin/
+.externalNativeBuild/
+.cxx/
+/captures
+.DS_Store
+local.properties
+
+# Build outputs / assinatura — nunca versionar
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Android Studio / IntelliJ — mantém config compartilhável do projeto
+# (SDK/compiler/run configs, code style), ignora estado específico da
+# máquina de cada dev (cache, workspace, últimos targets de deploy etc.)
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+.idea/shelf
+
+# Sobras temporarias (pode apagar)
+_to_delete/

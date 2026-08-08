@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Protótipo PDV Maquineta</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --surface-0:#EDEBE4;
+    --surface-1:#F7F6F2;
+    --surface-2:#FFFFFF;
+    --border: rgba(0,0,0,0.12);
+    --border-strong: rgba(0,0,0,0.22);
+    --border-accent:#378ADD;
+    --text-primary:#1C1C1A;
+    --text-secondary:#5F5E5A;
+    --text-muted:#8A8985;
+    --text-accent:#0C447C;
+    --text-success:#27500A;
+    --text-danger:#791F1F;
+    --text-warning:#633806;
+    --bg-accent:#E6F1FB;
+    --bg-success:#EAF3DE;
+    --bg-warning:#FAEEDA;
+    --bg-danger:#FCEBEB;
+    --fill-primary:#1C1C1A;
+    --on-primary:#FFFFFF;
+    --fill-danger:#E24B4A;
+    --on-danger:#FFFFFF;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:2.5rem 1rem;
+    background:var(--surface-0);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    color:var(--text-primary);
+    display:flex;
+    justify-content:center;
+  }
+  button{
+    font:inherit;
+    border:0.5px solid var(--border-strong);
+    background:var(--surface-2);
+    color:var(--text-primary);
+    border-radius:var(--radius);
+    padding:9px 12px;
+    cursor:pointer;
+  }
+  button:hover{ background:var(--surface-1); }
+  button:active{ transform:scale(0.98); }
+  input[type=text],input[type=password],input[type=number]{
+    font:inherit;
+    width:100%;
+    border:0.5px solid var(--border-strong);
+    border-radius:var(--radius);
+    padding:9px 10px;
+    background:var(--surface-2);
+    color:var(--text-primary);
+    box-sizing:border-box;
+  }
+  p{ margin:0; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .ti{ line-height:1; }
+</style>
+</head>
+<body>
+
+<div style="max-width:380px;width:100%;background:var(--surface-1);border:0.5px solid var(--border);border-radius:24px;padding:1.25rem;">
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;font-size:12px;">
+<button id="btn-exit" type="button" style="border:none;background:transparent;padding:0;display:none;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);">
+<i class="ti ti-arrow-left" style="font-size:16px;" aria-hidden="true"></i>Sair
+</button>
+<button id="btn-conn-toggle" type="button" style="border:none;background:transparent;padding:0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-success);">
+<i class="ti ti-wifi" id="conn-icon" style="font-size:16px;" aria-hidden="true"></i><span id="conn-status">Online</span>
+</button>
+</div>
+
+<div id="screen-login">
+<div style="text-align:center;margin-bottom:1.5rem;">
+<div style="width:56px;height:56px;border-radius:16px;background:var(--bg-accent);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+<i class="ti ti-device-desktop-analytics" style="font-size:28px;color:var(--text-accent);" aria-hidden="true"></i>
+</div>
+<p style="font-weight:500;font-size:16px;">PDV Maquineta</p>
+<p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">Entre para começar o turno</p>
+</div>
+<label style="font-size:13px;color:var(--text-secondary);">Usuário</label>
+<input id="login-user" type="text" value="operador.teste" style="margin:6px 0 12px;" />
+<label style="font-size:13px;color:var(--text-secondary);">Senha</label>
+<input id="login-pass" type="password" value="123456" style="margin:6px 0 16px;" />
+<button type="button" id="btn-login" style="width:100%;background:var(--fill-primary);color:var(--on-primary);border:none;margin-bottom:8px;">Entrar</button>
+<button type="button" id="btn-bio" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="ti ti-fingerprint" aria-hidden="true"></i>Entrar com biometria</button>
+</div>
+
+<div id="screen-cash" style="display:none;">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+<div style="width:36px;height:36px;border-radius:50%;background:var(--bg-accent);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:13px;color:var(--text-accent);">OT</div>
+<div>
+<p style="font-weight:500;font-size:14px;">Operador de teste</p>
+<span style="font-size:11px;background:var(--bg-accent);color:var(--text-accent);padding:2px 8px;border-radius:var(--radius);">Operador de caixa</span>
+</div>
+</div>
+<p style="font-size:13px;color:var(--text-secondary);margin:16px 0 6px;">Caixa fechado. Informe o valor inicial em dinheiro para abrir.</p>
+<label style="font-size:13px;color:var(--text-secondary);">Valor inicial</label>
+<input id="cash-initial" type="number" value="100" style="margin:6px 0 16px;" />
+<button type="button" id="btn-open-cash" style="width:100%;background:var(--fill-primary);color:var(--on-primary);border:none;">Abrir caixa</button>
+</div>
+
+<div id="screen-sale" style="display:none;">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+<i class="ti ti-search" style="font-size:18px;color:var(--text-muted);" aria-hidden="true"></i>
+<input id="product-search" type="text" placeholder="Buscar produto, código ou categoria" style="flex:1;" />
+</div>
+<div id="product-list" style="display:flex;flex-direction:column;gap:8px;max-height:180px;overflow:auto;margin-bottom:12px;"></div>
+
+<div id="suspended-wrap" style="display:none;margin-bottom:12px;">
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Vendas suspensas</p>
+<div id="suspended-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+</div>
+
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Carrinho</p>
+<div id="cart-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+
+<div id="discount-panel" style="display:none;background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+<label style="font-size:12px;color:var(--text-secondary);">Desconto no total (%)</label>
+<input id="discount-percent" type="number" min="0" max="100" value="0" style="margin:6px 0;" />
+<div id="supervisor-auth-wrap" style="display:none;margin-bottom:8px;">
+<p style="font-size:11px;color:var(--text-warning);margin-bottom:4px;">Desconto acima de 10% requer autorização do supervisor.</p>
+<input id="supervisor-pass" type="password" placeholder="Senha do supervisor" />
+</div>
+<div style="display:flex;gap:8px;">
+<button type="button" id="btn-apply-discount" style="flex:1;background:var(--fill-primary);color:var(--on-primary);border:none;">Aplicar</button>
+<button type="button" id="btn-cancel-discount" style="flex:1;">Cancelar</button>
+</div>
+</div>
+
+<div id="cancel-panel" style="display:none;background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+<label style="font-size:12px;color:var(--text-secondary);">Motivo do cancelamento</label>
+<input id="cancel-reason" type="text" placeholder="Cliente desistiu da compra" style="margin:6px 0;" />
+<div style="display:flex;gap:8px;">
+<button type="button" id="btn-confirm-cancel" style="flex:1;background:var(--fill-danger);color:var(--on-danger);border:none;">Confirmar cancelamento</button>
+<button type="button" id="btn-dismiss-cancel" style="flex:1;">Voltar</button>
+</div>
+</div>
+
+<div style="display:flex;gap:6px;margin-bottom:12px;">
+<button type="button" id="btn-toggle-discount" style="flex:1;font-size:11px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;"><i class="ti ti-percentage" style="font-size:16px;" aria-hidden="true"></i>Desconto</button>
+<button type="button" id="btn-suspend" style="flex:1;font-size:11px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;"><i class="ti ti-player-pause" style="font-size:16px;" aria-hidden="true"></i>Suspender</button>
+<button type="button" id="btn-toggle-cancel" style="flex:1;font-size:11px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-danger);"><i class="ti ti-x" style="font-size:16px;" aria-hidden="true"></i>Cancelar</button>
+</div>
+
+<p id="sale-feedback" style="font-size:12px;color:var(--text-success);margin-bottom:8px;display:none;"></p>
+<p id="discount-info" style="font-size:12px;color:var(--text-success);margin-bottom:4px;display:none;"></p>
+
+<div style="border-top:0.5px solid var(--border);padding-top:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+<span style="font-size:13px;color:var(--text-secondary);"><span id="cart-count">0</span> itens no carrinho</span>
+<span style="font-size:18px;font-weight:500;" id="cart-total">R$ 0,00</span>
+</div>
+<button type="button" id="btn-checkout" style="width:100%;background:var(--fill-primary);color:var(--on-primary);border:none;">Finalizar venda</button>
+</div>
+
+<div id="screen-payment" style="display:none;">
+<p style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">Total a pagar</p>
+<p style="font-size:28px;font-weight:500;margin-bottom:16px;" id="pay-total">R$ 0,00</p>
+<div id="payment-methods" style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;"></div>
+<div id="cash-received-wrap" style="display:none;margin:12px 0;">
+<label style="font-size:13px;color:var(--text-secondary);">Valor recebido</label>
+<input id="cash-received" type="number" style="margin:6px 0;" />
+<p style="font-size:13px;color:var(--text-secondary);">Troco: <span id="change-amount" style="font-weight:500;color:var(--text-primary);">R$ 0,00</span></p>
+</div>
+<div id="pix-qr-wrap" style="display:none;margin:12px 0;text-align:center;background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:16px;">
+<div id="pix-qr-canvas" style="width:160px;height:160px;margin:0 auto 10px;background:#fff;border-radius:8px;padding:8px;box-sizing:border-box;"></div>
+<p style="font-size:12px;color:var(--text-secondary);">Aponte a câmera do celular para pagar via Pix</p>
+</div>
+<button type="button" id="btn-pay" style="width:100%;background:var(--fill-primary);color:var(--on-primary);border:none;margin-top:12px;">Confirmar pagamento</button>
+<button type="button" id="btn-back-sale" style="width:100%;margin-top:8px;">Voltar ao carrinho</button>
+</div>
+
+<div id="screen-processing" style="display:none;text-align:center;padding:2.5rem 0;">
+<div style="width:32px;height:32px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--text-accent);margin:0 auto 16px;animation:spin 0.8s linear infinite;"></div>
+<p style="font-size:14px;color:var(--text-secondary);">Processando pagamento…</p>
+</div>
+
+<div id="screen-receipt" style="display:none;">
+<div style="text-align:center;margin-bottom:16px;">
+<div style="width:48px;height:48px;border-radius:50%;background:var(--bg-success);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+<i class="ti ti-check" style="font-size:24px;color:var(--text-success);" aria-hidden="true"></i>
+</div>
+<p style="font-weight:500;font-size:15px;">Pagamento aprovado</p>
+</div>
+<div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
+<div id="receipt-items" style="font-size:13px;"></div>
+<div style="border-top:0.5px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-weight:500;">
+<span>Total</span><span id="receipt-total"></span>
+</div>
+<p style="font-size:12px;color:var(--text-secondary);margin-top:8px;">Forma de pagamento: <span id="receipt-method"></span></p>
+</div>
+
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Comprovante e nota fiscal</p>
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+<button type="button" id="btn-print" style="display:flex;align-items:center;gap:10px;padding:10px 12px;text-align:left;"><i class="ti ti-printer" style="font-size:18px;" aria-hidden="true"></i><span style="font-size:13px;">Imprimir comprovante</span></button>
+<button type="button" id="btn-send" style="display:flex;align-items:center;gap:10px;padding:10px 12px;text-align:left;"><i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i><span style="font-size:13px;">Enviar por WhatsApp, SMS ou e-mail</span></button>
+<button type="button" id="btn-fiscal" style="display:flex;align-items:center;gap:10px;padding:10px 12px;text-align:left;"><i class="ti ti-file-invoice" style="font-size:18px;" aria-hidden="true"></i><span style="font-size:13px;">Emitir NFC-e</span></button>
+</div>
+<p id="action-feedback" style="font-size:12px;color:var(--text-success);margin-bottom:12px;display:none;"></p>
+
+<button type="button" id="btn-new-sale" style="width:100%;background:var(--fill-primary);color:var(--on-primary);border:none;margin-bottom:8px;">Nova venda</button>
+<button type="button" id="btn-close-cash" style="width:100%;">Fechar caixa</button>
+</div>
+
+<div id="screen-close" style="display:none;">
+<p style="font-weight:500;font-size:15px;margin-bottom:12px;">Fechamento de caixa</p>
+<table style="width:100%;font-size:13px;border-collapse:collapse;">
+<tr><td style="padding:6px 0;color:var(--text-secondary);">Valor inicial</td><td style="text-align:right;" id="close-initial"></td></tr>
+<tr><td style="padding:6px 0;color:var(--text-secondary);">Vendas em dinheiro</td><td style="text-align:right;" id="close-cash"></td></tr>
+<tr><td style="padding:6px 0;color:var(--text-secondary);">Vendas em cartão</td><td style="text-align:right;" id="close-card"></td></tr>
+<tr><td style="padding:6px 0;color:var(--text-secondary);">Vendas em Pix</td><td style="text-align:right;" id="close-pix"></td></tr>
+<tr style="border-top:0.5px solid var(--border);"><td style="padding:8px 0;font-weight:500;">Total esperado em caixa</td><td style="text-align:right;font-weight:500;" id="close-expected"></td></tr>
+</table>
+<button type="button" id="btn-confirm-close" style="width:100%;background:var(--fill-primary);color:var(--on-primary);border:none;margin-top:16px;">Confirmar fechamento</button>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var products = [
+    {id:1,name:'Água mineral 500ml',price:4.5},
+    {id:2,name:'Refrigerante lata',price:6},
+    {id:3,name:'Salgado assado',price:8.5},
+    {id:4,name:'Café expresso',price:5},
+    {id:5,name:'Barra de cereal',price:4},
+    {id:6,name:'Chocolate',price:7.5}
+  ];
+  var methods = [
+    {id:'dinheiro',label:'Dinheiro',icon:'ti-cash'},
+    {id:'cartao',label:'Cartão de crédito ou débito',icon:'ti-credit-card'},
+    {id:'pix',label:'Pix',icon:'ti-qrcode'}
+  ];
+  var cart = {};
+  var selectedMethod = null;
+  var initialCash = 0;
+  var salesTotals = {dinheiro:0,cartao:0,pix:0};
+  var online = true;
+  var discountPercent = 0;
+  var suspendedSales = [];
+
+  function formatBRL(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+  function showScreen(id){
+    ['screen-login','screen-cash','screen-sale','screen-payment','screen-processing','screen-receipt','screen-close'].forEach(function(s){
+      document.getElementById(s).style.display = (s===id) ? 'block' : 'none';
+    });
+    document.getElementById('btn-exit').style.display = (id==='screen-login') ? 'none' : 'flex';
+  }
+
+  function resetAll(){
+    cart = {};
+    salesTotals = {dinheiro:0,cartao:0,pix:0};
+    initialCash = 0;
+    selectedMethod = null;
+    discountPercent = 0;
+    suspendedSales = [];
+    renderCartList();
+    renderCartSummary();
+    renderSuspendedList();
+    showScreen('screen-login');
+  }
+
+  function cartSubtotal(){
+    return Object.keys(cart).reduce(function(sum,id){
+      var p = products.find(function(x){return x.id==id;});
+      return sum + p.price*cart[id];
+    },0);
+  }
+  function cartTotal(){
+    var sub = cartSubtotal();
+    return sub - (sub*discountPercent/100);
+  }
+  function cartCount(){
+    return Object.values(cart).reduce(function(a,b){return a+b;},0);
+  }
+
+  function incItem(id){ cart[id]=(cart[id]||0)+1; renderCartList(); renderCartSummary(); }
+  function decItem(id){ if(!cart[id]) return; cart[id]--; if(cart[id]<=0) delete cart[id]; renderCartList(); renderCartSummary(); }
+  function removeItemAll(id){ delete cart[id]; renderCartList(); renderCartSummary(); }
+
+  function renderCartList(){
+    var box = document.getElementById('cart-list');
+    var ids = Object.keys(cart);
+    if (ids.length===0){
+      box.innerHTML = '<p style="font-size:12px;color:var(--text-muted);">Nenhum item adicionado ainda.</p>';
+      return;
+    }
+    box.innerHTML='';
+    ids.forEach(function(id){
+      var p = products.find(function(x){return x.id==id;});
+      var row = document.createElement('div');
+      row.style.cssText='background:var(--surface-2);border-radius:var(--radius);padding:6px 10px;display:flex;flex-direction:column;gap:4px;';
+      var top = document.createElement('div');
+      top.style.cssText='display:flex;justify-content:space-between;font-size:12px;';
+      top.innerHTML='<span>'+p.name+'</span><span>'+formatBRL(p.price*cart[id])+'</span>';
+      var controls = document.createElement('div');
+      controls.style.cssText='display:flex;align-items:center;justify-content:flex-end;gap:6px;';
+      var minusBtn = document.createElement('button');
+      minusBtn.type='button'; minusBtn.setAttribute('aria-label','Diminuir '+p.name);
+      minusBtn.style.cssText='width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;line-height:1;';
+      minusBtn.textContent='\u2212';
+      minusBtn.onclick=function(){ decItem(id); };
+      var qtySpan = document.createElement('span');
+      qtySpan.style.cssText='min-width:16px;text-align:center;font-size:12px;';
+      qtySpan.textContent = cart[id];
+      var plusBtn = document.createElement('button');
+      plusBtn.type='button'; plusBtn.setAttribute('aria-label','Aumentar '+p.name);
+      plusBtn.style.cssText='width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;line-height:1;';
+      plusBtn.textContent='+';
+      plusBtn.onclick=function(){ incItem(id); };
+      var trashBtn = document.createElement('button');
+      trashBtn.type='button'; trashBtn.setAttribute('aria-label','Remover '+p.name);
+      trashBtn.style.cssText='width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center;color:var(--text-danger);margin-left:4px;font-size:14px;line-height:1;';
+      trashBtn.textContent='\u00d7';
+      trashBtn.onclick=function(){ removeItemAll(id); };
+      controls.appendChild(minusBtn);
+      controls.appendChild(qtySpan);
+      controls.appendChild(plusBtn);
+      controls.appendChild(trashBtn);
+      row.appendChild(top);
+      row.appendChild(controls);
+      box.appendChild(row);
+    });
+  }
+
+  function renderCartSummary(){
+    document.getElementById('cart-count').textContent = cartCount();
+    document.getElementById('cart-total').textContent = formatBRL(cartTotal());
+    var info = document.getElementById('discount-info');
+    if (discountPercent > 0){
+      info.textContent = 'Desconto de '+discountPercent+'% aplicado (-'+formatBRL(cartSubtotal()-cartTotal())+')';
+      info.style.display = 'block';
+    } else {
+      info.style.display = 'none';
+    }
+  }
+
+  function renderSuspendedList(){
+    var wrap = document.getElementById('suspended-wrap');
+    var list = document.getElementById('suspended-list');
+    list.innerHTML='';
+    if (suspendedSales.length===0){ wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    suspendedSales.forEach(function(s){
+      var count = Object.values(s.items).reduce(function(a,b){return a+b;},0);
+      var total = Object.keys(s.items).reduce(function(sum,id){
+        var p = products.find(function(x){return x.id==id;});
+        return sum + p.price*s.items[id];
+      },0);
+      var row = document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--bg-warning);border-radius:var(--radius);padding:8px 10px;';
+      var label = document.createElement('span');
+      label.style.cssText='font-size:12px;color:var(--text-warning);';
+      label.textContent = count+' itens · '+formatBRL(total);
+      var resumeBtn = document.createElement('button');
+      resumeBtn.type='button';
+      resumeBtn.textContent='Retomar';
+      resumeBtn.style.cssText='font-size:11px;padding:4px 10px;';
+      resumeBtn.onclick=function(){
+        cart = JSON.parse(JSON.stringify(s.items));
+        discountPercent = s.discount || 0;
+        suspendedSales = suspendedSales.filter(function(x){ return x.id!==s.id; });
+        renderCartList();
+        renderCartSummary();
+        renderSuspendedList();
+        showSaleFeedback('Venda retomada.');
+      };
+      row.appendChild(label);
+      row.appendChild(resumeBtn);
+      list.appendChild(row);
+    });
+  }
+
+  function showSaleFeedback(text){
+    var el = document.getElementById('sale-feedback');
+    el.textContent = text;
+    el.style.display = 'block';
+    clearTimeout(window._saleFbTimer);
+    window._saleFbTimer = setTimeout(function(){ el.style.display='none'; }, 2500);
+  }
+
+  function addToCart(id){ incItem(id); }
+
+  function renderProducts(filter){
+    var list = document.getElementById('product-list');
+    list.innerHTML='';
+    products.filter(function(p){
+      return !filter || p.name.toLowerCase().indexOf(filter.toLowerCase())!==-1;
+    }).forEach(function(p){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 12px;';
+      var info = document.createElement('div');
+      info.style.cssText = 'display:flex;align-items:center;gap:10px;';
+      info.innerHTML = '<i class="ti ti-package" style="font-size:18px;color:var(--text-secondary);" aria-hidden="true"></i><div><p style="font-size:13px;font-weight:500;">'+p.name+'</p><p style="font-size:12px;color:var(--text-secondary);">'+formatBRL(p.price)+'</p></div>';
+      var btn = document.createElement('button');
+      btn.type='button';
+      btn.setAttribute('aria-label','Adicionar '+p.name);
+      btn.style.cssText='width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;line-height:1;';
+      btn.textContent='+';
+      btn.onclick=function(){ addToCart(p.id); };
+      row.appendChild(info);
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+  }
+
+  function renderPaymentMethods(){
+    var wrap = document.getElementById('payment-methods');
+    wrap.innerHTML='';
+    methods.forEach(function(m){
+      var row = document.createElement('button');
+      row.type='button';
+      row.style.cssText='display:flex;align-items:center;gap:10px;padding:12px;text-align:left;'+(selectedMethod===m.id?'border:2px solid var(--border-accent);':'');
+      row.innerHTML='<i class="ti '+m.icon+'" style="font-size:18px;" aria-hidden="true"></i><span style="font-size:14px;">'+m.label+'</span>';
+      row.onclick=function(){
+        selectedMethod=m.id;
+        renderPaymentMethods();
+        document.getElementById('cash-received-wrap').style.display = (m.id==='dinheiro') ? 'block' : 'none';
+        document.getElementById('pix-qr-wrap').style.display = (m.id==='pix') ? 'block' : 'none';
+        if (m.id==='pix') renderPixQr();
+      };
+      wrap.appendChild(row);
+    });
+  }
+
+  function renderPixQr(){
+    var el = document.getElementById('pix-qr-canvas');
+    el.innerHTML='';
+    var payload = 'PDVMAQUINETA-PIX-'+cartTotal().toFixed(2)+'-DEMO';
+    if (window.QRCode){
+      new QRCode(el, {
+        text: payload,
+        width: 144,
+        height: 144,
+        colorDark: '#000000',
+        colorLight: '#ffffff'
+      });
+    }
+  }
+
+  function showActionFeedback(text){
+    var el = document.getElementById('action-feedback');
+    el.textContent = text;
+    el.style.display = 'block';
+    clearTimeout(window._fbTimer);
+    window._fbTimer = setTimeout(function(){ el.style.display='none'; }, 2500);
+  }
+
+  function completeSale(){
+    var total = cartTotal();
+    salesTotals[selectedMethod] += total;
+    var itemsDiv = document.getElementById('receipt-items');
+    itemsDiv.innerHTML = Object.keys(cart).map(function(id){
+      var p = products.find(function(x){return x.id==id;});
+      return '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>'+cart[id]+'x '+p.name+'</span><span>'+formatBRL(p.price*cart[id])+'</span></div>';
+    }).join('');
+    document.getElementById('receipt-total').textContent = formatBRL(total);
+    var methodLabel = methods.find(function(m){return m.id===selectedMethod;}).label;
+    document.getElementById('receipt-method').textContent = methodLabel;
+    document.getElementById('action-feedback').style.display='none';
+    showScreen('screen-receipt');
+  }
+
+  document.getElementById('btn-exit').onclick = function(){ resetAll(); };
+  document.getElementById('btn-login').onclick = function(){ showScreen('screen-cash'); };
+  document.getElementById('btn-bio').onclick = function(){ showScreen('screen-cash'); };
+
+  document.getElementById('btn-open-cash').onclick = function(){
+    initialCash = parseFloat(document.getElementById('cash-initial').value) || 0;
+    showScreen('screen-sale');
+  };
+
+  document.getElementById('product-search').addEventListener('input', function(e){
+    renderProducts(e.target.value);
+  });
+
+  document.getElementById('btn-toggle-discount').onclick = function(){
+    document.getElementById('cancel-panel').style.display='none';
+    var panel = document.getElementById('discount-panel');
+    panel.style.display = (panel.style.display==='block') ? 'none' : 'block';
+  };
+  document.getElementById('discount-percent').addEventListener('input', function(e){
+    var val = parseFloat(e.target.value) || 0;
+    document.getElementById('supervisor-auth-wrap').style.display = (val>10) ? 'block' : 'none';
+  });
+  document.getElementById('btn-cancel-discount').onclick = function(){
+    document.getElementById('discount-panel').style.display='none';
+  };
+  document.getElementById('btn-apply-discount').onclick = function(){
+    var val = parseFloat(document.getElementById('discount-percent').value) || 0;
+    if (val>100) val=100;
+    if (val>10){
+      var pass = document.getElementById('supervisor-pass').value;
+      if (!pass) return;
+    }
+    discountPercent = val;
+    renderCartSummary();
+    document.getElementById('discount-panel').style.display='none';
+    showSaleFeedback(val>0 ? ('Desconto de '+val+'% aplicado.') : 'Desconto removido.');
+  };
+
+  document.getElementById('btn-toggle-cancel').onclick = function(){
+    if (cartCount()===0) return;
+    document.getElementById('discount-panel').style.display='none';
+    var panel = document.getElementById('cancel-panel');
+    panel.style.display = (panel.style.display==='block') ? 'none' : 'block';
+  };
+  document.getElementById('btn-dismiss-cancel').onclick = function(){
+    document.getElementById('cancel-panel').style.display='none';
+  };
+  document.getElementById('btn-confirm-cancel').onclick = function(){
+    cart = {};
+    discountPercent = 0;
+    renderCartList();
+    renderCartSummary();
+    document.getElementById('cancel-panel').style.display='none';
+    document.getElementById('cancel-reason').value='';
+    showSaleFeedback('Venda cancelada.');
+  };
+
+  document.getElementById('btn-suspend').onclick = function(){
+    if (cartCount()===0) return;
+    suspendedSales.push({id:Date.now(), items:JSON.parse(JSON.stringify(cart)), discount:discountPercent});
+    cart = {};
+    discountPercent = 0;
+    renderCartList();
+    renderCartSummary();
+    renderSuspendedList();
+    showSaleFeedback('Venda suspensa. Você pode retomá-la na lista acima.');
+  };
+
+  document.getElementById('btn-checkout').onclick = function(){
+    if (cartCount()===0) return;
+    document.getElementById('pay-total').textContent = formatBRL(cartTotal());
+    selectedMethod = null;
+    document.getElementById('cash-received-wrap').style.display='none';
+    document.getElementById('pix-qr-wrap').style.display='none';
+    renderPaymentMethods();
+    showScreen('screen-payment');
+  };
+
+  document.getElementById('cash-received').addEventListener('input', function(e){
+    var received = parseFloat(e.target.value) || 0;
+    var change = received - cartTotal();
+    document.getElementById('change-amount').textContent = formatBRL(change > 0 ? change : 0);
+  });
+
+  document.getElementById('btn-back-sale').onclick = function(){ showScreen('screen-sale'); };
+
+  document.getElementById('btn-pay').onclick = function(){
+    if (!selectedMethod) return;
+    showScreen('screen-processing');
+    setTimeout(completeSale, 1200);
+  };
+
+  document.getElementById('btn-print').onclick = function(){ showActionFeedback('Comprovante enviado para a impressora.'); };
+  document.getElementById('btn-send').onclick = function(){ showActionFeedback('Comprovante enviado digitalmente.'); };
+  document.getElementById('btn-fiscal').onclick = function(){ showActionFeedback('NFC-e emitida com sucesso.'); };
+
+  document.getElementById('btn-new-sale').onclick = function(){
+    cart = {};
+    discountPercent = 0;
+    renderCartList();
+    renderCartSummary();
+    renderProducts();
+    showScreen('screen-sale');
+  };
+
+  document.getElementById('btn-close-cash').onclick = function(){
+    var expected = initialCash + salesTotals.dinheiro + salesTotals.cartao + salesTotals.pix;
+    document.getElementById('close-initial').textContent = formatBRL(initialCash);
+    document.getElementById('close-cash').textContent = formatBRL(salesTotals.dinheiro);
+    document.getElementById('close-card').textContent = formatBRL(salesTotals.cartao);
+    document.getElementById('close-pix').textContent = formatBRL(salesTotals.pix);
+    document.getElementById('close-expected').textContent = formatBRL(expected);
+    showScreen('screen-close');
+  };
+
+  document.getElementById('btn-confirm-close').onclick = function(){ resetAll(); };
+
+  document.getElementById('btn-conn-toggle').onclick = function(){
+    online = !online;
+    var icon = document.getElementById('conn-icon');
+    var status = document.getElementById('conn-status');
+    var btn = document.getElementById('btn-conn-toggle');
+    if (online){
+      icon.className='ti ti-wifi';
+      status.textContent='Online';
+      btn.style.color='var(--text-success)';
+    } else {
+      icon.className='ti ti-wifi-off';
+      status.textContent='Offline';
+      btn.style.color='var(--text-danger)';
+    }
+  };
+
+  renderProducts();
+  renderCartList();
+  renderPaymentMethods();
+  renderSuspendedList();
+  showScreen('screen-login');
+})();
+</script>
+</body>
+</html>
