@@ -131,6 +131,9 @@ fun SaleScreen(
     scanErrorMessage: String?,
     onSubmitBarcode: (String) -> Unit,
     onFinalizeSale: () -> Unit,
+    cpfReminderVisible: Boolean,
+    onCpfReminderInform: () -> Unit,
+    onCpfReminderContinue: () -> Unit,
     cargaPluState: CargaPluUiState,
     onCargaPluLoad: () -> Unit,
     onBack: () -> Unit,
@@ -384,6 +387,20 @@ fun SaleScreen(
             errorMessage = discountUiState.errorMessage,
             onAuthorize = onAuthorizeDiscount,
             onDismiss = onDismissDiscountAuthorization
+        )
+    }
+
+    if (cpfReminderVisible) {
+        AlertDialog(
+            onDismissRequest = onCpfReminderContinue,
+            title = { Text("CPF do cliente") },
+            text = { Text("Deseja informar o CPF do cliente nesta venda?") },
+            confirmButton = {
+                PdvTextButton(onClick = onCpfReminderInform) { Text("Informar CPF") }
+            },
+            dismissButton = {
+                PdvTextButton(onClick = onCpfReminderContinue) { Text("Continuar sem CPF") }
+            }
         )
     }
 

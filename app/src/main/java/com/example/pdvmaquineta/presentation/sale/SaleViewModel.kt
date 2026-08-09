@@ -227,6 +227,10 @@ class SaleViewModel @Inject constructor(
     var customerPickerVisible by mutableStateOf(false)
         private set
 
+    // Lembrete (nao obrigatorio) de CPF antes do pagamento
+    var cpfReminderVisible by mutableStateOf(false)
+        private set
+
     var customerPickerUiState by mutableStateOf(CustomerPickerUiState())
         private set
 
@@ -485,7 +489,27 @@ class SaleViewModel @Inject constructor(
         }
     }
 
+    // Aviso (nao obrigatorio) de CPF: se o gestor ligou "pedir CPF" e a venda
+    // ainda nao tem cliente com documento, mostra um lembrete antes do pagamento.
     fun finalizeSale() {
+        if (remoteConfig.get().requireCustomerCpf && selectedCustomer?.document.isNullOrBlank()) {
+            cpfReminderVisible = true
+            return
+        }
+        proceedFinalize()
+    }
+
+    fun continueSaleWithoutCpf() {
+        cpfReminderVisible = false
+        proceedFinalize()
+    }
+
+    fun informCpf() {
+        cpfReminderVisible = false
+        showCustomerPicker()
+    }
+
+    private fun proceedFinalize() {
         val overview = cart.value ?: return
         viewModelScope.launch {
             stockErrorMessage = null
