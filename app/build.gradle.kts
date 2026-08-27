@@ -4,7 +4,15 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
 }
-2
+
+// Commit atual do Git (código curto) carimbado na build. Usa providers.exec,
+// compatível com o "configuration cache" do Gradle (rodar processo externo
+// direto em tempo de configuração é proibido). Sem Git, vira "unknown".
+val gitCommitHash: String = providers.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+    isIgnoreExitValue = true
+}.standardOutput.asText.get().trim().ifBlank { "unknown" }
+
 android {
     namespace = "com.example.pdvmaquineta"
     compileSdk {
@@ -17,8 +25,11 @@ android {
         applicationId = "com.example.pdvmaquineta"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1.0"
+
+        // Carimbo do commit do Git nesta build (pra rastrear no GitHub).
+        buildConfigField("String", "GIT_COMMIT", "\"$gitCommitHash\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

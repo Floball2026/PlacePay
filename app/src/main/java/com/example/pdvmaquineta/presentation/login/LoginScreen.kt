@@ -1,5 +1,6 @@
 package com.example.pdvmaquineta.presentation.login
 
+import com.example.pdvmaquineta.BuildConfig
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -132,6 +133,14 @@ fun LoginScreen(
             Spacer(Modifier.width(PdvDimens.SpacingSmall))
             Text("Entrar com biometria (em breve)")
         }
+
+        Spacer(Modifier.height(PdvDimens.SpacingMedium))
+
+        Text(
+            text = "Versão ${BuildConfig.VERSION_NAME} (build ${BuildConfig.VERSION_CODE}) · ${BuildConfig.GIT_COMMIT}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
