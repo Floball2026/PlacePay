@@ -764,7 +764,7 @@ private fun CartBottomPanel(
     ) {
         Column(
             modifier = Modifier
-                .padding(PdvDimens.SpacingMedium)
+                .padding(horizontal = PdvDimens.SpacingMedium, vertical = PdvDimens.SpacingSmall)
                 .fillMaxWidth()
         ) {
             Row(
@@ -789,20 +789,20 @@ private fun CartBottomPanel(
                     onClick = onFinalize,
                     enabled = (cart?.itemCount ?: 0) > 0,
                     modifier = Modifier
-                        .width(160.dp)
-                        .height(56.dp)
+                        .width(150.dp)
+                        .height(48.dp)
                 ) {
                     Text("FINALIZAR")
                 }
             }
 
-            Spacer(Modifier.height(PdvDimens.SpacingSmall))
+            Spacer(Modifier.height(6.dp))
 
             PdvOutlinedButton(
                 onClick = onSupport,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
+                    .height(40.dp)
             ) {
                 Text("Suporte Venda", fontSize = 13.sp)
             }

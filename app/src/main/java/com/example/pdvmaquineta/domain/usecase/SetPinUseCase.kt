@@ -24,7 +24,8 @@ class SetPinUseCase @Inject constructor(
     private val sessionManager: SessionManager
 ) {
     suspend operator fun invoke(userId: Long, pin: String): SetPinResult {
-        if (pin.length != 6 || !pin.all { it.isDigit() }) return SetPinResult.InvalidPin
+        // PIN de 4 a 10 digitos numericos (alinhado a PinPolicy da UI: MIN=4, MAX=10).
+        if (pin.length !in 4..10 || !pin.all { it.isDigit() }) return SetPinResult.InvalidPin
 
         userRepository.setPin(userId, pin)
         val updatedUser = userRepository.findById(userId)

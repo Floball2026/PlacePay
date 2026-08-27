@@ -36,7 +36,7 @@ class CreateUserUseCase @Inject constructor(
         if (!AuthorizationPolicy.hasPermission(actor.role, Permission.MANAGE_USERS)) {
             return CreateUserResult.NotAuthorized
         }
-        if (displayName.isBlank() || username.isBlank() || pin.length != 6 || !pin.all { it.isDigit() }) {
+        if (displayName.isBlank() || username.isBlank() || pin.length !in 4..10 || !pin.all { it.isDigit() }) {
             return CreateUserResult.InvalidData
         }
         if (userRepository.existsByUsername(username)) {
