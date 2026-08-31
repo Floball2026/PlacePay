@@ -32,6 +32,11 @@ android {
         buildConfigField("String", "GIT_COMMIT", "\"$gitCommitHash\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // SmartPOS SDK da PayTime roda em armeabi-v7a.
+        ndk {
+            abiFilters += "armeabi-v7a"
+        }
     }
 
     buildTypes {
@@ -49,6 +54,13 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // Exigido pelo SDK da PayTime (empacotamento das libs nativas .so).
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 ksp {
@@ -56,6 +68,9 @@ ksp {
 }
 
 dependencies {
+    // SmartPOS SDK da PayTime (pagamento e impressao na maquineta) — ambiente DEBUG.
+    debugImplementation("com.paytime:payossdk-debug:1.0.14")
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

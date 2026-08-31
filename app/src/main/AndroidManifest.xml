@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="com.pax.permission.PRINTER" />
     <!-- Não obrigatória: maquinetas sem câmera continuam funcionando com o
          leitor físico externo (RF-011). -->
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
@@ -44,7 +45,7 @@
              exportação de relatórios (Fase 7c) cai pro diretório externo
              próprio do app em vez do MediaStore/Downloads. -->
         <provider
-            android:name="androidx.core.content.FileProvider"
+            android:name=".PdvFileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

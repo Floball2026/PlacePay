@@ -1,7 +1,7 @@
 package com.example.pdvmaquineta.data.di
 
 import com.example.pdvmaquineta.data.receipt.MockDigitalReceiptSender
-import com.example.pdvmaquineta.data.receipt.MockReceiptPrinter
+import com.example.pdvmaquineta.data.receipt.PaytimeReceiptPrinter
 import com.example.pdvmaquineta.domain.receipt.DigitalReceiptSender
 import com.example.pdvmaquineta.domain.receipt.ReceiptPrinter
 import dagger.Binds
@@ -21,7 +21,7 @@ abstract class ReceiptModule {
 
     @Binds
     @Singleton
-    abstract fun bindReceiptPrinter(impl: MockReceiptPrinter): ReceiptPrinter
+    abstract fun bindReceiptPrinter(impl: PaytimeReceiptPrinter): ReceiptPrinter
 
     @Binds
     @Singleton
