@@ -68,10 +68,25 @@ data class TransactionItemDto(
 data class TransactionPaymentDto(
     @SerializedName("method") val method: String,
     @SerializedName("amount_cents") val amountCents: Long,
-    @SerializedName("received_cents") val receivedCents: Long?,
-    @SerializedName("change_cents") val changeCents: Long?,
-    @SerializedName("authorization_code") val authorizationCode: String?,
-    @SerializedName("is_offline") val isOffline: Boolean?
+    @SerializedName("received_cents") val receivedCents: Long? = null,
+    @SerializedName("change_cents") val changeCents: Long? = null,
+    // NSU da transacao na adquirente. E o que permite conciliar a venda com o
+    // extrato dela — sem isso a conta nao fecha do lado de fora.
+    @SerializedName("nsu") val nsu: String? = null,
+    @SerializedName("authorization_code") val authorizationCode: String? = null,
+    @SerializedName("acquirer") val acquirer: String? = null,
+    @SerializedName("installments") val installments: Int? = null,
+    @SerializedName("is_offline") val isOffline: Boolean? = null,
+    @SerializedName("is_reversal") val isReversal: Boolean? = null
+)
+
+// Cancelamento feito no proprio terminal. Vai junto do reenvio da venda (mesmo
+// transaction_uuid): o servidor reconhece o replay e aplica o cancelamento em
+// vez de descartar o payload.
+data class TransactionCancellationDto(
+    @SerializedName("reason") val reason: String?,
+    @SerializedName("cancelled_at") val cancelledAt: String?,
+    @SerializedName("cancelled_by") val cancelledBy: String?
 )
 
 data class PosTransactionInput(
@@ -86,7 +101,8 @@ data class PosTransactionInput(
     @SerializedName("completed_at") val completedAt: String,
     @SerializedName("totals") val totals: TransactionTotalsDto,
     @SerializedName("items") val items: List<TransactionItemDto>,
-    @SerializedName("payments") val payments: List<TransactionPaymentDto>
+    @SerializedName("payments") val payments: List<TransactionPaymentDto>,
+    @SerializedName("cancellation") val cancellation: TransactionCancellationDto? = null
 )
 
 data class PosTransactionResponse(

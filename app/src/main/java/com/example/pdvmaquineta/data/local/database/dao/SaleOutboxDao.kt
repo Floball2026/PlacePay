@@ -38,6 +38,17 @@ interface SaleOutboxDao {
     )
     suspend fun markFailed(id: Long, error: String?, now: Long)
 
+    // Substitui o payload e reabre a linha para envio, preservando o
+    // transactionUuid. Usado quando a venda e cancelada no terminal depois de
+    // ja ter subido: o servidor reconhece o replay pelo mesmo UUID e aplica o
+    // cancelamento. Zera attempts porque e uma tentativa nova, nao uma repeticao
+    // da que falhou.
+    @Query(
+        "UPDATE sale_outbox SET payload = :payload, status = 'PENDING', " +
+            "attempts = 0, lastError = NULL, updatedAt = :now WHERE id = :id"
+    )
+    suspend fun replacePayload(id: Long, payload: String, now: Long)
+
     // Vendas concluídas que ainda não entraram na fila (ex.: concluídas antes
     // desta funcionalidade existir, ou perdidas por um crash entre o
     // completeSale e o enqueue). Usado na reconciliação no boot.

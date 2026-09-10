@@ -29,6 +29,15 @@ interface PaymentDao {
     )
     suspend fun findApprovedForSale(saleId: Long): PaymentEntity?
 
+    // Todos os pagamentos aprovados da venda, em ordem cronologica.
+    // A venda pode ter mais de um (pagamento dividido); o envio ao SaaS precisa
+    // de todos, senao a soma dos pagamentos nao fecha com o total.
+    @Query(
+        "SELECT * FROM payments WHERE saleId = :saleId AND status = 'APPROVED' " +
+            "ORDER BY createdAt ASC"
+    )
+    suspend fun findAllApprovedForSale(saleId: Long): List<PaymentEntity>
+
     // Mesma agregação de sumApprovedByMethod, por período em vez de sessão de
     // caixa — usado no relatório (Fase 7b).
     @Query(

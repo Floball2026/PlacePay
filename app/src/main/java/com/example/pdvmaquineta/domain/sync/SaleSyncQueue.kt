@@ -15,4 +15,14 @@ interface SaleSyncQueue {
     // Enfileira vendas concluidas que ficaram de fora da fila e entao envia.
     // Chamado no inicio do app.
     suspend fun reconcileAndFlush()
+
+    // Avisa o SaaS que uma venda ja enviada foi cancelada no terminal. Reusa o
+    // transaction_uuid original, entao o servidor trata como replay e aplica o
+    // cancelamento. Sem efeito se a venda nunca chegou a ser enfileirada.
+    suspend fun enqueueCancellation(
+        saleId: Long,
+        reason: String,
+        cancelledBy: String?,
+        cancelledAtMillis: Long
+    )
 }
