@@ -58,6 +58,9 @@ fun TerminalConfigScreen(
     isActivated: Boolean,
     terminalId: String,
     onActivate: (baseUrl: String, code: String) -> Unit,
+    paytimeCode: String,
+    paytimeCodeMessage: String?,
+    onSavePaytimeCode: (code: String) -> Unit,
     isOutdated: Boolean,
     currentVersion: Int,
     minVersion: Int,
@@ -141,6 +144,37 @@ fun TerminalConfigScreen(
         activationState.error?.let {
             Spacer(Modifier.height(PdvDimens.SpacingSmall))
             Text(it, color = MaterialTheme.colorScheme.error)
+        }
+
+        Spacer(Modifier.height(PdvDimens.SpacingLarge))
+
+        // ----- Pagamento (PayTime / maquininha) -----
+        var maquininhaCode by remember(paytimeCode) { mutableStateOf(paytimeCode) }
+        Text("Pagamento (PayTime)", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(PdvDimens.SpacingSmall))
+        Text(
+            text = "Código da maquininha usado para ativar os pagamentos por cartão/PIX nesta A960.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(PdvDimens.SpacingSmall))
+        OutlinedTextField(
+            value = maquininhaCode,
+            onValueChange = { maquininhaCode = it },
+            label = { Text("Código da maquininha (PayTime)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(PdvDimens.SpacingSmall))
+        PdvButton(
+            onClick = { onSavePaytimeCode(maquininhaCode) },
+            modifier = Modifier.fillMaxWidth().height(PdvDimens.ButtonHeight)
+        ) {
+            Text("Salvar código PayTime")
+        }
+        paytimeCodeMessage?.let {
+            Spacer(Modifier.height(PdvDimens.SpacingSmall))
+            Text(it, color = MaterialTheme.colorScheme.tertiary)
         }
 
         Spacer(Modifier.height(PdvDimens.SpacingLarge))

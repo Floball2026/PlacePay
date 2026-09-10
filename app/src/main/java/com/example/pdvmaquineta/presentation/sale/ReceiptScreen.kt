@@ -81,6 +81,8 @@ fun ReceiptScreen(
     onSendDigitally: (ReceiptChannel) -> Unit,
     bottomActionLabel: String,
     onBottomAction: () -> Unit,
+    onReprintCard: (() -> Unit)? = null,
+    reprintUiState: ReceiptActionUiState = ReceiptActionUiState(),
     modifier: Modifier = Modifier
 ) {
     var showChannelPicker by remember { mutableStateOf(false) }
@@ -244,6 +246,21 @@ fun ReceiptScreen(
         printUiState.errorMessage?.let { error ->
             Spacer(Modifier.height(PdvDimens.SpacingSmall))
             Text(text = error, color = MaterialTheme.colorScheme.error)
+        }
+
+        onReprintCard?.let { reprint ->
+            Spacer(Modifier.height(PdvDimens.SpacingMedium))
+            PdvOutlinedButton(
+                onClick = reprint,
+                enabled = !reprintUiState.isLoading,
+                modifier = Modifier.fillMaxWidth().height(PdvDimens.ButtonHeight)
+            ) {
+                Text(if (reprintUiState.isLoading) "Reimprimindo..." else "Reimprimir comprovante")
+            }
+            reprintUiState.errorMessage?.let { error ->
+                Spacer(Modifier.height(PdvDimens.SpacingSmall))
+                Text(text = error, color = MaterialTheme.colorScheme.error)
+            }
         }
 
         Spacer(Modifier.height(PdvDimens.SpacingMedium))

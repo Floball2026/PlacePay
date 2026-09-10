@@ -12,6 +12,7 @@ import com.example.pdvmaquineta.domain.usecase.ObserveTerminalConfigUseCase
 import com.example.pdvmaquineta.domain.usecase.UpdateTerminalConfigResult
 import com.example.pdvmaquineta.domain.usecase.UpdateTerminalConfigUseCase
 import com.example.pdvmaquineta.data.sync.DeviceInfoProvider
+import com.example.pdvmaquineta.data.sync.PaytimeConfigStore
 import com.example.pdvmaquineta.data.sync.SyncRepository
 import com.example.pdvmaquineta.data.sync.SyncSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,7 +40,8 @@ class TerminalConfigViewModel @Inject constructor(
     private val updateTerminalConfigUseCase: UpdateTerminalConfigUseCase,
     private val syncRepository: SyncRepository,
     private val syncSettings: SyncSettings,
-    private val deviceInfo: DeviceInfoProvider
+    private val deviceInfo: DeviceInfoProvider,
+    private val paytimeConfig: PaytimeConfigStore
 ) : ViewModel() {
 
     // Checagem de versao minima: o heartbeat guarda min_app_version_code; se a
@@ -63,6 +65,24 @@ class TerminalConfigViewModel @Inject constructor(
 
     val currentBaseUrl: String get() = syncSettings.baseUrl
     val terminalId: String get() = syncSettings.terminalId
+
+    // Codigo da maquininha (PayTime) usado no init() do SDK de pagamento.
+    // Editavel direto na A960 sem recompilar.
+    var paytimeCode by mutableStateOf(paytimeConfig.getActivationCode())
+        private set
+    var paytimeCodeMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun savePaytimeCode(code: String) {
+        val trimmed = code.trim()
+        if (trimmed.isBlank()) {
+            paytimeCodeMessage = "Informe o código da maquininha"
+            return
+        }
+        paytimeConfig.setActivationCode(trimmed)
+        paytimeCode = paytimeConfig.getActivationCode()
+        paytimeCodeMessage = "Código da maquininha salvo"
+    }
 
     fun activate(baseUrl: String, activationCode: String) {
         if (baseUrl.isBlank() || activationCode.isBlank()) {

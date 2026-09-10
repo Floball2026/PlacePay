@@ -35,7 +35,8 @@ android {
 
         // SmartPOS SDK da PayTime roda em armeabi-v7a.
         ndk {
-            abiFilters += "armeabi-v7a"
+            abiFilters.clear()
+            abiFilters.add("armeabi-v7a")
         }
     }
 

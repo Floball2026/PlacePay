@@ -6,4 +6,8 @@ package com.example.pdvmaquineta.domain.payment
 // implementação desta interface.
 interface PaymentGateway {
     suspend fun charge(request: PaymentRequest): PaymentResult
+
+    // Reimprime o comprovante da ultima transacao de cartao/PIX (marcado como
+    // REIMPRESSAO). Retorna false se nao houver comprovante em memoria.
+    suspend fun reprintLastReceipt(): Boolean = false
 }

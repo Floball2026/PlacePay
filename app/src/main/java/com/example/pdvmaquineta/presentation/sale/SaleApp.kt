@@ -77,7 +77,11 @@ fun SaleApp(
             modifier = modifier
         )
 
-        SaleRoute.Processing -> PaymentProcessingScreen(modifier = modifier)
+        SaleRoute.Processing -> PaymentProcessingScreen(
+            message = viewModel.paymentStatusMessage,
+            onCancel = viewModel::cancelPayment,
+            modifier = modifier
+        )
 
         SaleRoute.Receipt -> {
             val sale = viewModel.pendingSale
@@ -92,6 +96,9 @@ fun SaleApp(
                     onSendDigitally = viewModel::sendReceiptDigitally,
                     bottomActionLabel = "Nova venda",
                     onBottomAction = viewModel::startNewSale,
+                    onReprintCard = if (payment.method != com.example.pdvmaquineta.domain.payment.PaymentMethod.CASH)
+                        viewModel::reprintCardReceipt else null,
+                    reprintUiState = viewModel.cardReprintUiState,
                     modifier = modifier
                 )
             }

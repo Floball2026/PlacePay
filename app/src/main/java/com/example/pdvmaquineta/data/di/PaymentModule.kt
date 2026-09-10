@@ -1,6 +1,6 @@
 package com.example.pdvmaquineta.data.di
 
-import com.example.pdvmaquineta.data.payment.MockPaymentGateway
+import com.example.pdvmaquineta.data.payment.PaytimePaymentGateway
 import com.example.pdvmaquineta.domain.payment.PaymentGateway
 import dagger.Binds
 import dagger.Module
@@ -17,5 +17,5 @@ abstract class PaymentModule {
 
     @Binds
     @Singleton
-    abstract fun bindPaymentGateway(impl: MockPaymentGateway): PaymentGateway
+    abstract fun bindPaymentGateway(impl: PaytimePaymentGateway): PaymentGateway
 }

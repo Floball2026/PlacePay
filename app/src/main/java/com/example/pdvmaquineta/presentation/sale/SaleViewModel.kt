@@ -11,6 +11,8 @@ import com.example.pdvmaquineta.domain.model.Customer
 import com.example.pdvmaquineta.domain.model.Payment
 import com.example.pdvmaquineta.domain.model.Product
 import com.example.pdvmaquineta.domain.model.Sale
+import com.example.pdvmaquineta.data.payment.PaymentStatusBus
+import com.example.pdvmaquineta.domain.usecase.ReprintCardReceiptUseCase
 import com.example.pdvmaquineta.domain.payment.PaymentMethod
 import com.example.pdvmaquineta.domain.receipt.ReceiptChannel
 import com.example.pdvmaquineta.domain.receipt.ReceiptPrintResult
@@ -65,6 +67,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 sealed class SaleRoute {
@@ -136,11 +139,35 @@ class SaleViewModel @Inject constructor(
     private val redeemLoyaltyUseCase: RedeemLoyaltyUseCase,
     private val undoLoyaltyRedemptionUseCase: UndoLoyaltyRedemptionUseCase,
     private val printReceiptUseCase: PrintReceiptUseCase,
+    private val reprintCardReceiptUseCase: ReprintCardReceiptUseCase,
     private val sendReceiptDigitallyUseCase: SendReceiptDigitallyUseCase,
     private val validateCartStockUseCase: ValidateCartStockUseCase,
     private val syncRepository: SyncRepository,
-    private val remoteConfig: BusinessConfigStore
+    private val remoteConfig: BusinessConfigStore,
+    private val paymentStatusBus: PaymentStatusBus
 ) : ViewModel() {
+
+    // Mensagens ao vivo do fluxo de pagamento do SDK (inserir cartao, senha...).
+    var paymentStatusMessage by mutableStateOf<String?>(null)
+        private set
+
+    init {
+        viewModelScope.launch {
+            paymentStatusBus.message.collect { paymentStatusMessage = it }
+        }
+    }
+
+    var cardReprintUiState by mutableStateOf(ReceiptActionUiState())
+        private set
+
+    fun reprintCardReceipt() {
+        viewModelScope.launch {
+            cardReprintUiState = cardReprintUiState.copy(isLoading = true, errorMessage = null)
+            val ok = reprintCardReceiptUseCase()
+            cardReprintUiState = if (ok) ReceiptActionUiState()
+                else ReceiptActionUiState(errorMessage = "Nenhum comprovante de cartao para reimprimir")
+        }
+    }
 
     var cargaPluState by mutableStateOf(CargaPluUiState())
         private set
@@ -549,11 +576,23 @@ class SaleViewModel @Inject constructor(
         paymentUiState = PaymentUiState()
     }
 
+    private var paymentJob: Job? = null
+
+    fun cancelPayment() {
+        // Aborta a transacao em andamento no terminal (o gateway chama abort()
+        // ao cancelar o job) e volta pra selecao de forma de pagamento.
+        paymentJob?.cancel()
+        paymentJob = null
+        paymentStatusBus.clear()
+        paymentUiState = PaymentUiState(errorMessage = "Pagamento cancelado")
+        route = SaleRoute.PaymentMethod
+    }
+
     fun confirmPayment(receivedCents: Long?) {
         val sale = pendingSale?.sale ?: return
         val method = selectedPaymentMethod ?: return
         val total = pendingSale?.totalCents ?: return
-        viewModelScope.launch {
+        paymentJob = viewModelScope.launch {
             route = SaleRoute.Processing
             when (val result = processPaymentUseCase(sale, method, total, receivedCents)) {
                 is ProcessPaymentResult.Approved -> {

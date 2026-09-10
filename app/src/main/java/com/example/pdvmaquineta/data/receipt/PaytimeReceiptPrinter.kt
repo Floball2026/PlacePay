@@ -8,6 +8,8 @@ import com.example.pdvmaquineta.domain.receipt.ReceiptPrinter
 import com.example.pdvmaquineta.domain.usecase.CartOverview
 import com.paytime.payossdk.PayOsSdkPrinter
 import com.paytime.payossdk.external.model.printer.PayOsSdkPrinterStatus
+import com.pax.dal.entity.EFontTypeAscii
+import com.pax.dal.entity.EFontTypeExtCode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -43,6 +45,7 @@ class PaytimeReceiptPrinter @Inject constructor(
                 ensureConfigured()
                 printer.init()
                 printer.setGray(3)
+                printer.fontSet(EFontTypeAscii.FONT_12_24, EFontTypeExtCode.FONT_16_16)
                 for (line in buildReceiptLines(cart, payment)) {
                     printer.printStr(line + "\n", "utf-8")
                 }
