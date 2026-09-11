@@ -21,6 +21,10 @@ data class Payment(
     val changeCents: Long?,
     val status: PaymentStatus,
     val transactionId: String?,
+    // Chave imutavel da transacao na adquirente, exigida pelo estorno. Nula em
+    // dinheiro e em vendas gravadas antes da v16 do banco — essas nao podem ser
+    // estornadas pelo terminal.
+    val nsuRequest: String?,
     val declineReason: String?,
     val createdAt: Long
 )

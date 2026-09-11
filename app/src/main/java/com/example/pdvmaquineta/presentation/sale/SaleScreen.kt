@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.pdvmaquineta.presentation.theme.PdvNavySurfaceVariant
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -97,6 +98,7 @@ fun SaleScreen(
     products: List<Product>,
     discountUiState: DiscountUiState,
     cancelUiState: CancelSaleUiState,
+    cancelLastSaleUiState: CancelLastSaleUiState,
     resumeErrorMessage: String?,
     selectedCustomer: Customer?,
     loyaltyStatus: LoyaltyRedeemable?,
@@ -119,6 +121,10 @@ fun SaleScreen(
     onResumeSale: (Sale) -> Unit,
     onCancelSale: (String) -> Unit,
     onResetCancelPanel: () -> Unit,
+    onCancelLastSale: (String) -> Unit,
+    onAuthorizeCancelLastSale: (String, String) -> Unit,
+    onDismissCancelLastSaleAuthorization: () -> Unit,
+    onResetCancelLastSalePanel: () -> Unit,
     onShowCustomerPicker: () -> Unit,
     onHideCustomerPicker: () -> Unit,
     onCustomerSearchQueryChange: (String) -> Unit,
@@ -150,6 +156,8 @@ fun SaleScreen(
     var showCargaPlu by remember { mutableStateOf(false) }
 
     val items = cart?.items.orEmpty()
+    var showCancelLastPanel by remember { mutableStateOf(false) }
+    var cancelLastReason by remember { mutableStateOf("") }
     val awaitingDiscountAuthorization = discountUiState.authorizationRequired && discountUiState.authorization == null
     val cartLocked = (cart?.loyaltyDiscountCents ?: 0) > 0
 
@@ -426,6 +434,12 @@ fun SaleScreen(
                     showSupportMenu = false
                     showCancelPanel = true
                 },
+                onCancelLastSale = {
+                    showSupportMenu = false
+                    cancelLastReason = ""
+                    onResetCancelLastSalePanel()
+                    showCancelLastPanel = true
+                },
                 onCargaPlu = {
                     showSupportMenu = false
                     showCargaPlu = true
@@ -445,6 +459,23 @@ fun SaleScreen(
         }
     }
 
+    // O cancelamento terminou: fecha o painel. Sem isto o dialogo ficava aberto
+    // e identico depois do sucesso, como se o botao nao tivesse funcionado.
+    LaunchedEffect(cancelUiState.done) {
+        if (cancelUiState.done) {
+            showCancelPanel = false
+            cancelReason = ""
+            onResetCancelPanel()
+        }
+    }
+
+    LaunchedEffect(cancelLastSaleUiState.done) {
+        if (cancelLastSaleUiState.done) {
+            showCancelLastPanel = false
+            cancelLastReason = ""
+        }
+    }
+
     if (showCancelPanel) {
         Dialog(onDismissRequest = {
             showCancelPanel = false
@@ -461,6 +492,32 @@ fun SaleScreen(
                 }
             )
         }
+    }
+
+    if (showCancelLastPanel) {
+        Dialog(onDismissRequest = {
+            showCancelLastPanel = false
+            onResetCancelLastSalePanel()
+        }) {
+            CancelLastSalePanel(
+                reason = cancelLastReason,
+                onReasonChange = { cancelLastReason = it },
+                uiState = cancelLastSaleUiState,
+                onConfirm = { onCancelLastSale(cancelLastReason) },
+                onCancel = {
+                    showCancelLastPanel = false
+                    onResetCancelLastSalePanel()
+                }
+            )
+        }
+    }
+
+    if (cancelLastSaleUiState.authorizationRequired) {
+        SupervisorAuthorizationDialog(
+            errorMessage = cancelLastSaleUiState.errorMessage,
+            onAuthorize = onAuthorizeCancelLastSale,
+            onDismiss = onDismissCancelLastSaleAuthorization
+        )
     }
 
     if (showCargaPlu) {
@@ -858,6 +915,71 @@ private fun DiscountPanel(
 }
 
 @Composable
+private fun CancelLastSalePanel(
+    reason: String,
+    onReasonChange: (String) -> Unit,
+    uiState: CancelLastSaleUiState,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+            .padding(PdvDimens.SpacingMedium)
+    ) {
+        Text("Cancelar última venda", style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(PdvDimens.SpacingSmall))
+        Text(
+            "A última venda concluída deste caixa será cancelada. " +
+                "Pagamentos em cartão ou PIX são estornados na adquirente antes " +
+                "de a venda deixar de valer.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(PdvDimens.SpacingMedium))
+        Text("Motivo do cancelamento", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(PdvDimens.SpacingSmall))
+        OutlinedTextField(
+            value = reason,
+            onValueChange = onReasonChange,
+            singleLine = true,
+            enabled = !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth()
+        )
+        uiState.errorMessage?.let {
+            Spacer(Modifier.height(PdvDimens.SpacingSmall))
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+        uiState.authorizedByUsername?.let {
+            Spacer(Modifier.height(PdvDimens.SpacingSmall))
+            Text("Autorizado por @$it", color = MaterialTheme.colorScheme.tertiary)
+        }
+        Spacer(Modifier.height(PdvDimens.SpacingMedium))
+        Row(horizontalArrangement = Arrangement.spacedBy(PdvDimens.SpacingSmall)) {
+            PdvButton(
+                onClick = onConfirm,
+                enabled = !uiState.isLoading && reason.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PdvFillDanger,
+                    contentColor = PdvOnDanger
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(if (uiState.isLoading) "Estornando..." else "Confirmar")
+            }
+            PdvOutlinedButton(
+                onClick = onCancel,
+                enabled = !uiState.isLoading,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Voltar")
+            }
+        }
+    }
+}
+
+@Composable
 private fun CancelPanel(
     reason: String,
     onReasonChange: (String) -> Unit,
@@ -962,6 +1084,7 @@ private fun SuspendedSaleRow(sale: Sale, onResume: () -> Unit) {
 private fun SupportMenuPanel(
     onCorrectPrice: () -> Unit,
     onCancelSale: () -> Unit,
+    onCancelLastSale: () -> Unit,
     onCargaPlu: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -979,6 +1102,10 @@ private fun SupportMenuPanel(
         Spacer(Modifier.height(PdvDimens.SpacingSmall))
         PdvOutlinedButton(onClick = onCancelSale, modifier = Modifier.fillMaxWidth()) {
             Text("Cancelar venda")
+        }
+        Spacer(Modifier.height(PdvDimens.SpacingSmall))
+        PdvOutlinedButton(onClick = onCancelLastSale, modifier = Modifier.fillMaxWidth()) {
+            Text("Cancelar última venda")
         }
         Spacer(Modifier.height(PdvDimens.SpacingSmall))
         PdvOutlinedButton(onClick = onCargaPlu, modifier = Modifier.fillMaxWidth()) {

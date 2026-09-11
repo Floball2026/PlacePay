@@ -13,6 +13,15 @@ interface SaleDao {
     @Query("SELECT * FROM sales WHERE cashSessionId = :cashSessionId AND status = 'OPEN' LIMIT 1")
     fun observeOpenSale(cashSessionId: Long): Flow<SaleEntity?>
 
+    // Ultima venda concluida da sessao de caixa aberta — alvo do "Cancelar
+    // ultima venda". Nao atravessa fechamento de caixa de proposito: depois do
+    // fechamento o caminho e o estorno pelo portal da adquirente, nao o PDV.
+    @Query(
+        "SELECT * FROM sales WHERE cashSessionId = :cashSessionId " +
+            "AND status = 'COMPLETED' ORDER BY updatedAt DESC LIMIT 1"
+    )
+    suspend fun findLastCompleted(cashSessionId: Long): SaleEntity?
+
     @Query(
         "SELECT * FROM sales WHERE cashSessionId = :cashSessionId AND status = 'SUSPENDED' " +
             "ORDER BY updatedAt DESC"

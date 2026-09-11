@@ -306,3 +306,23 @@ val MIGRATION_14_15: Migration = object : Migration(14, 15) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_customers_phone` ON `customers` (`phone`)")
     }
 }
+
+
+// Estorno de venda no cartao: guarda os identificadores da transacao na
+// adquirente. O `nsuRequest` e a chave imutavel da transacao no SDK da PayTime
+// e o que o `revertTransaction` exige — ate aqui ele era descartado, e por isso
+// nenhuma venda ja paga podia ser estornada pelo terminal. Os demais campos
+// (NSU da adquirente, nome dela, bandeira, PAN mascarado, parcelas) existem no
+// retorno do SDK e sao o que permite conciliar a venda com o extrato.
+// Todas as colunas sao novas e anulaveis: vendas antigas seguem validas, apenas
+// sem os identificadores — elas nao poderao ser estornadas pelo app.
+val MIGRATION_15_16: Migration = object : Migration(15, 16) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `payments` ADD COLUMN `nsuRequest` TEXT")
+        db.execSQL("ALTER TABLE `payments` ADD COLUMN `nsuAcquirer` TEXT")
+        db.execSQL("ALTER TABLE `payments` ADD COLUMN `acquirerName` TEXT")
+        db.execSQL("ALTER TABLE `payments` ADD COLUMN `cardBrand` TEXT")
+        db.execSQL("ALTER TABLE `payments` ADD COLUMN `panMasked` TEXT")
+        db.execSQL("ALTER TABLE `payments` ADD COLUMN `installments` INTEGER")
+    }
+}

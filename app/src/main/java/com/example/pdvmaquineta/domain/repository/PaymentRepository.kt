@@ -2,6 +2,7 @@ package com.example.pdvmaquineta.domain.repository
 
 import com.example.pdvmaquineta.domain.model.Payment
 import com.example.pdvmaquineta.domain.model.PaymentStatus
+import com.example.pdvmaquineta.domain.payment.CardTransactionDetails
 import com.example.pdvmaquineta.domain.payment.PaymentMethod
 
 interface PaymentRepository {
@@ -13,7 +14,8 @@ interface PaymentRepository {
         changeCents: Long?,
         status: PaymentStatus,
         transactionId: String?,
-        declineReason: String?
+        declineReason: String?,
+        card: CardTransactionDetails? = null
     ): Payment
 
     // Só pagamentos aprovados, agrupados por forma — usado no fechamento de
@@ -25,6 +27,10 @@ interface PaymentRepository {
     // (reimpressão), já que o Payment não fica em memória fora do fluxo
     // pós-venda em que foi originado.
     suspend fun findApprovedForSale(saleId: Long): Payment?
+
+    // Todos os pagamentos aprovados da venda. O cancelamento precisa de todos
+    // para estornar cada transacao de cartao/PIX.
+    suspend fun approvedPaymentsForSale(saleId: Long): List<Payment>
 
     // Mesma agregação de getApprovedTotalsByMethod, mas por período em vez de
     // sessão de caixa — usado no relatório (Fase 7b). fromMillis/toMillis

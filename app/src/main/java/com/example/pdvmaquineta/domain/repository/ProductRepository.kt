@@ -40,6 +40,11 @@ interface ProductRepository {
     // stockQuantity negativo se o produto permitir venda sem estoque.
     suspend fun decrementStock(id: Long, quantity: Int)
 
+    // Devolve ao estoque (cancelamento de venda ja concluida, que ja tinha
+    // baixado). Separado do decrement com quantidade negativa para o codigo
+    // dizer o que faz.
+    suspend fun incrementStock(id: Long, quantity: Int)
+
     // Estado atual (não histórico) — usado no relatório (Fase 7b).
     suspend fun getLowStockProducts(): List<Product>
 }

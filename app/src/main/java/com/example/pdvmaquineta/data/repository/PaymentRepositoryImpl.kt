@@ -4,6 +4,7 @@ import com.example.pdvmaquineta.data.local.database.dao.PaymentDao
 import com.example.pdvmaquineta.data.local.database.entity.PaymentEntity
 import com.example.pdvmaquineta.domain.model.Payment
 import com.example.pdvmaquineta.domain.model.PaymentStatus
+import com.example.pdvmaquineta.domain.payment.CardTransactionDetails
 import com.example.pdvmaquineta.domain.payment.PaymentMethod
 import com.example.pdvmaquineta.domain.repository.PaymentRepository
 import javax.inject.Inject
@@ -20,7 +21,8 @@ class PaymentRepositoryImpl @Inject constructor(
         changeCents: Long?,
         status: PaymentStatus,
         transactionId: String?,
-        declineReason: String?
+        declineReason: String?,
+        card: CardTransactionDetails?
     ): Payment {
         val entity = PaymentEntity(
             saleId = saleId,
@@ -30,6 +32,12 @@ class PaymentRepositoryImpl @Inject constructor(
             changeCents = changeCents,
             status = status.name,
             transactionId = transactionId,
+            nsuRequest = card?.nsuRequest,
+            nsuAcquirer = card?.nsuAcquirer,
+            acquirerName = card?.acquirerName,
+            cardBrand = card?.brand,
+            panMasked = card?.panMasked,
+            installments = card?.installments,
             declineReason = declineReason,
             createdAt = System.currentTimeMillis()
         )
@@ -50,6 +58,9 @@ class PaymentRepositoryImpl @Inject constructor(
             PaymentMethod.valueOf(it.method) to it.totalCents
         }
 
+    override suspend fun approvedPaymentsForSale(saleId: Long): List<Payment> =
+        paymentDao.findAllApprovedForSale(saleId).map { it.toDomain() }
+
     private fun PaymentEntity.toDomain() = Payment(
         id = id,
         saleId = saleId,
@@ -59,6 +70,7 @@ class PaymentRepositoryImpl @Inject constructor(
         changeCents = changeCents,
         status = PaymentStatus.valueOf(status),
         transactionId = transactionId,
+        nsuRequest = nsuRequest,
         declineReason = declineReason,
         createdAt = createdAt
     )

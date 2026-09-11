@@ -6,6 +6,7 @@ import com.example.pdvmaquineta.domain.model.SessionState
 import com.example.pdvmaquineta.domain.repository.AuditRepository
 import com.example.pdvmaquineta.domain.repository.SaleRepository
 import com.example.pdvmaquineta.domain.session.SessionManager
+import com.example.pdvmaquineta.domain.sync.SaleSyncQueue
 import javax.inject.Inject
 
 sealed class CancelSaleResult {
@@ -17,7 +18,8 @@ class CancelSaleUseCase @Inject constructor(
     private val saleRepository: SaleRepository,
     private val undoLoyaltyRedemptionUseCase: UndoLoyaltyRedemptionUseCase,
     private val auditRepository: AuditRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val saleSyncQueue: SaleSyncQueue
 ) {
     suspend operator fun invoke(saleId: Long, reason: String): CancelSaleResult {
         if (reason.isBlank()) return CancelSaleResult.ReasonRequired
@@ -34,6 +36,20 @@ class CancelSaleUseCase @Inject constructor(
         }
 
         val actor = (sessionManager.state.value as? SessionState.Active)?.user
+
+        // Avisa a retaguarda. Ate aqui o cancelamento morria no terminal: a
+        // venda ja tinha subido como concluida e nunca mais era corrigida, entao
+        // o painel mostrava faturamento maior que o real e o estoque nao voltava.
+        // Nao bloqueia o cancelamento se falhar — o outbox tenta de novo depois.
+        runCatching {
+            saleSyncQueue.enqueueCancellation(
+                saleId = saleId,
+                reason = reason,
+                cancelledBy = actor?.username,
+                cancelledAtMillis = System.currentTimeMillis()
+            )
+        }
+
         if (actor != null) {
             auditRepository.log(
                 AuditEntry(

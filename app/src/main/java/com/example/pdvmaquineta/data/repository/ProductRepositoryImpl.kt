@@ -89,6 +89,16 @@ class ProductRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun incrementStock(id: Long, quantity: Int) {
+        val existing = productDao.findById(id) ?: return
+        productDao.update(
+            existing.copy(
+                stockQuantity = existing.stockQuantity + quantity,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
     override suspend fun getLowStockProducts(): List<Product> =
         productDao.findLowStock().map { it.toDomain() }
 
