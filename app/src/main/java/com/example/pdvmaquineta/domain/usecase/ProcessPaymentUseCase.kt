@@ -53,7 +53,8 @@ class ProcessPaymentUseCase @Inject constructor(
                     changeCents = result.changeCents,
                     status = PaymentStatus.APPROVED,
                     transactionId = result.transactionId,
-                    declineReason = null
+                    declineReason = null,
+                    card = result.card
                 )
                 saleRepository.completeSale(sale.id)
                 // Enfileira a venda pro SaaS (grava local; envio em segundo

@@ -45,7 +45,7 @@ import com.example.pdvmaquineta.data.local.database.entity.UserEntity
         LoyaltyTransactionEntity::class,
         TerminalConfigEntity::class
     ],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 abstract class PdvDatabase : RoomDatabase() {

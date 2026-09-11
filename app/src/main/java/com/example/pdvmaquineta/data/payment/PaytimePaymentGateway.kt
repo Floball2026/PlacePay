@@ -3,6 +3,7 @@ package com.example.pdvmaquineta.data.payment
 import android.content.Context
 import android.util.Log
 import com.example.pdvmaquineta.data.sync.PaytimeConfigStore
+import com.example.pdvmaquineta.domain.payment.CardTransactionDetails
 import com.example.pdvmaquineta.domain.payment.PaymentGateway
 import com.example.pdvmaquineta.domain.payment.PaymentMethod
 import com.example.pdvmaquineta.domain.payment.PaymentRequest
@@ -50,6 +51,8 @@ class PaytimePaymentGateway @Inject constructor(
     @Volatile private var printerConfigured = false
     @Volatile private var lastCardReceipt: String? = null
     @Volatile private var lastNsu: String? = null
+    // Chave imutavel da transacao no SDK — e o que o revertTransaction exige.
+    @Volatile private var lastNsuRequest: String? = null
     @Volatile private var lastMethod: PaymentMethod? = null
     @Volatile private var hasApproved = false
 
@@ -184,6 +187,7 @@ class PaytimePaymentGateway @Inject constructor(
     ): PaymentResult {
         lastCardReceipt = null
         lastNsu = null
+        lastNsuRequest = null
         lastMethod = method
         hasApproved = false
         // PIX espera o cliente pagar (status PENDING ate confirmar); cartao e rapido.
@@ -201,10 +205,34 @@ class PaytimePaymentGateway @Inject constructor(
                             PayOsSdkTransactionStatus.CONFIRMED, null -> {
                                 lastCardReceipt = store?.transactionReceipt
                                 lastNsu = store?.nsuResponse
+                                lastNsuRequest = store?.nsuRequest
                                 hasApproved = true
                                 Log.d(TAG, "tx CONFIRMED status ok, receiptLen=${store?.transactionReceipt?.length ?: 0}")
                                 val txId = store?.nsuResponse ?: store?.authAcquirer ?: store?.auto ?: "OK"
-                                if (cont.isActive) cont.resume(PaymentResult.Approved(transactionId = txId))
+                                // Guarda tudo que identifica a transacao na adquirente. Ate
+                                // aqui so o NSU de resposta sobrevivia — sem o nsuRequest
+                                // nenhuma venda paga podia ser estornada depois.
+                                val card = store?.let {
+                                    CardTransactionDetails(
+                                        nsuRequest = it.nsuRequest,
+                                        nsuAcquirer = it.nsuAcquirer ?: it.nsuResponse,
+                                        // O SDK nao expoe o nome da adquirente ao Kotlin
+                                        // (`acquirerName` e privado na declaracao, mesmo
+                                        // aparecendo publico no bytecode). Enquanto a PayTime
+                                        // for o unico meio de captura, o canal identifica a
+                                        // origem; a coluna no banco fica pronta pro dia em que
+                                        // houver de onde tirar o nome real.
+                                        acquirerName = ACQUIRER_NAME,
+                                        brand = it.brand,
+                                        panMasked = it.panMasked,
+                                        installments = it.installments
+                                    )
+                                }
+                                if (cont.isActive) {
+                                    cont.resume(
+                                        PaymentResult.Approved(transactionId = txId, card = card)
+                                    )
+                                }
                             }
                             else -> { // CANCELLED, REFUNDED, FAILED
                                 val reason = status?.name ?: "Transacao nao confirmada"
@@ -355,6 +383,7 @@ class PaytimePaymentGateway @Inject constructor(
     }
 
     private companion object {
+        const val ACQUIRER_NAME = "paytime"
         const val TAG = "PaytimePay"
         const val COLS = 32
     }

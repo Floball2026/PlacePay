@@ -2,6 +2,7 @@ package com.example.pdvmaquineta.domain.repository
 
 import com.example.pdvmaquineta.domain.model.Payment
 import com.example.pdvmaquineta.domain.model.PaymentStatus
+import com.example.pdvmaquineta.domain.payment.CardTransactionDetails
 import com.example.pdvmaquineta.domain.payment.PaymentMethod
 
 interface PaymentRepository {
@@ -13,7 +14,8 @@ interface PaymentRepository {
         changeCents: Long?,
         status: PaymentStatus,
         transactionId: String?,
-        declineReason: String?
+        declineReason: String?,
+        card: CardTransactionDetails? = null
     ): Payment
 
     // Só pagamentos aprovados, agrupados por forma — usado no fechamento de

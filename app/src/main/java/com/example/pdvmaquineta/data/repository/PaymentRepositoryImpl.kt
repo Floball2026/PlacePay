@@ -4,6 +4,7 @@ import com.example.pdvmaquineta.data.local.database.dao.PaymentDao
 import com.example.pdvmaquineta.data.local.database.entity.PaymentEntity
 import com.example.pdvmaquineta.domain.model.Payment
 import com.example.pdvmaquineta.domain.model.PaymentStatus
+import com.example.pdvmaquineta.domain.payment.CardTransactionDetails
 import com.example.pdvmaquineta.domain.payment.PaymentMethod
 import com.example.pdvmaquineta.domain.repository.PaymentRepository
 import javax.inject.Inject
@@ -20,7 +21,8 @@ class PaymentRepositoryImpl @Inject constructor(
         changeCents: Long?,
         status: PaymentStatus,
         transactionId: String?,
-        declineReason: String?
+        declineReason: String?,
+        card: CardTransactionDetails?
     ): Payment {
         val entity = PaymentEntity(
             saleId = saleId,
@@ -30,6 +32,12 @@ class PaymentRepositoryImpl @Inject constructor(
             changeCents = changeCents,
             status = status.name,
             transactionId = transactionId,
+            nsuRequest = card?.nsuRequest,
+            nsuAcquirer = card?.nsuAcquirer,
+            acquirerName = card?.acquirerName,
+            cardBrand = card?.brand,
+            panMasked = card?.panMasked,
+            installments = card?.installments,
             declineReason = declineReason,
             createdAt = System.currentTimeMillis()
         )

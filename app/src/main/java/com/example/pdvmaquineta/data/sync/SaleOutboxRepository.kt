@@ -175,10 +175,10 @@ class SaleOutboxRepository @Inject constructor(
 
     private fun toPaymentDto(payment: PaymentEntity): TransactionPaymentDto {
         val isCash = payment.method == PaymentMethod.CASH.name
-        // Em cartao/PIX o `transactionId` gravado pelo gateway e o NSU devolvido
-        // pela adquirente (PaytimePaymentGateway usa nsuResponse). Ele ia subindo
-        // so como authorization_code, o que impedia a conciliacao com o extrato.
-        val nsu = if (isCash) null else payment.transactionId
+        // NSU da adquirente. Vendas gravadas antes da v16 do banco nao tem a
+        // coluna preenchida; ai o `transactionId` (que guardava o NSU de
+        // resposta) ainda serve de fallback.
+        val nsu = if (isCash) null else (payment.nsuAcquirer ?: payment.transactionId)
         return TransactionPaymentDto(
             method = payment.method,
             amountCents = payment.amountCents,
@@ -186,9 +186,10 @@ class SaleOutboxRepository @Inject constructor(
             changeCents = payment.changeCents,
             nsu = nsu,
             authorizationCode = payment.transactionId,
-            // Constante enquanto a PayTime for o unico meio de captura. No dia
-            // em que houver uma segunda, isto vira coluna em `payments`.
-            acquirer = if (isCash) null else ACQUIRER_PAYTIME,
+            // Nome real devolvido pela adquirente. Antes ia "paytime" fixo, que
+            // e o facilitador e nao a adquirente da transacao.
+            acquirer = if (isCash) null else payment.acquirerName,
+            installments = payment.installments,
             isOffline = false
         )
     }
@@ -259,6 +260,5 @@ class SaleOutboxRepository @Inject constructor(
     private companion object {
         const val TAG = "SaleOutbox"
         const val SCHEMA_VERSION = 2
-        const val ACQUIRER_PAYTIME = "paytime"
     }
 }
