@@ -32,6 +32,9 @@ class SaleRepositoryImpl @Inject constructor(
 
     override suspend fun findById(saleId: Long): Sale? = saleDao.findById(saleId)?.toDomain()
 
+    override suspend fun findLastCompleted(cashSessionId: Long): Sale? =
+        saleDao.findLastCompleted(cashSessionId)?.toDomain()
+
     override suspend fun getOrCreateOpenSale(cashSessionId: Long, operator: User): Sale {
         val existing = saleDao.observeOpenSale(cashSessionId).first()
         if (existing != null) return existing.toDomain()

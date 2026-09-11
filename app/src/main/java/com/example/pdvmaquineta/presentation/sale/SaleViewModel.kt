@@ -22,6 +22,8 @@ import com.example.pdvmaquineta.domain.usecase.ApplyDiscountResult
 import com.example.pdvmaquineta.domain.usecase.ApplyDiscountUseCase
 import com.example.pdvmaquineta.domain.usecase.AuthorizeWithSupervisorUseCase
 import com.example.pdvmaquineta.domain.usecase.CancelSaleResult
+import com.example.pdvmaquineta.domain.usecase.CancelLastSaleResult
+import com.example.pdvmaquineta.domain.usecase.CancelLastSaleUseCase
 import com.example.pdvmaquineta.domain.usecase.CancelSaleUseCase
 import com.example.pdvmaquineta.domain.usecase.CartOverview
 import com.example.pdvmaquineta.domain.usecase.ChangeCartItemQuantityUseCase
@@ -86,7 +88,22 @@ data class DiscountUiState(
 
 data class CancelSaleUiState(
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    // Sinaliza a tela para fechar o painel. Sem isto o dialogo continuava
+    // aberto depois de um cancelamento bem-sucedido, e lia-se como "o botao
+    // nao respondeu" — a venda era cancelada e nada mudava na tela.
+    val done: Boolean = false
+)
+
+data class CancelLastSaleUiState(
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val successMessage: String? = null,
+    // A configuracao do negocio exige supervisor e ninguem autorizou ainda.
+    val authorizationRequired: Boolean = false,
+    val authorizedByUsername: String? = null,
+    // Fecha o painel: o cancelamento terminou.
+    val done: Boolean = false
 )
 
 data class PaymentUiState(
@@ -126,6 +143,7 @@ class SaleViewModel @Inject constructor(
     private val suspendSaleUseCase: SuspendSaleUseCase,
     private val resumeSaleUseCase: ResumeSaleUseCase,
     private val cancelSaleUseCase: CancelSaleUseCase,
+    private val cancelLastSaleUseCase: CancelLastSaleUseCase,
     private val finalizeSaleUseCase: FinalizeSaleUseCase,
     private val processPaymentUseCase: ProcessPaymentUseCase,
     private val reopenSaleUseCase: ReopenSaleUseCase,
@@ -230,6 +248,9 @@ class SaleViewModel @Inject constructor(
         private set
 
     var cancelUiState by mutableStateOf(CancelSaleUiState())
+        private set
+
+    var cancelLastSaleUiState by mutableStateOf(CancelLastSaleUiState())
         private set
 
     var resumeErrorMessage by mutableStateOf<String?>(null)
@@ -433,7 +454,7 @@ class SaleViewModel @Inject constructor(
         viewModelScope.launch {
             cancelUiState = cancelUiState.copy(isLoading = true, errorMessage = null)
             when (cancelSaleUseCase(saleId, reason)) {
-                CancelSaleResult.Success -> cancelUiState = CancelSaleUiState()
+                CancelSaleResult.Success -> cancelUiState = CancelSaleUiState(done = true)
                 CancelSaleResult.ReasonRequired ->
                     cancelUiState = cancelUiState.copy(
                         isLoading = false,
@@ -445,6 +466,92 @@ class SaleViewModel @Inject constructor(
 
     fun resetCancelPanel() {
         cancelUiState = CancelSaleUiState()
+    }
+
+    // ---------- Cancelamento da ultima venda JA CONCLUIDA ----------
+    // Diferente do cancelSale acima, que age sobre o carrinho aberto. Aqui a
+    // venda ja foi paga: o dinheiro precisa voltar na adquirente ANTES de a
+    // venda deixar de valer.
+    fun cancelLastSale(reason: String) {
+        val sessionId = cashSessionId.value ?: return
+        viewModelScope.launch {
+            cancelLastSaleUiState = cancelLastSaleUiState.copy(
+                isLoading = true,
+                errorMessage = null,
+                successMessage = null
+            )
+            val requireSupervisor = remoteConfig.get().requireSupervisorCancel
+            val result = cancelLastSaleUseCase(
+                cashSessionId = sessionId,
+                reason = reason,
+                requireSupervisor = requireSupervisor,
+                authorizedByUsername = cancelLastSaleUiState.authorizedByUsername
+            )
+            cancelLastSaleUiState = when (result) {
+                is CancelLastSaleResult.Success -> CancelLastSaleUiState(
+                    successMessage = "Venda #${result.sale.id} cancelada e estornada",
+                    done = true
+                )
+                CancelLastSaleResult.NoSaleToCancel -> cancelLastSaleUiState.copy(
+                    isLoading = false,
+                    errorMessage = "Nenhuma venda concluída neste caixa para cancelar"
+                )
+                CancelLastSaleResult.ReasonRequired -> cancelLastSaleUiState.copy(
+                    isLoading = false,
+                    errorMessage = "Informe o motivo do cancelamento"
+                )
+                CancelLastSaleResult.AuthorizationRequired -> cancelLastSaleUiState.copy(
+                    isLoading = false,
+                    authorizationRequired = true
+                )
+                CancelLastSaleResult.CannotRevertLegacySale -> cancelLastSaleUiState.copy(
+                    isLoading = false,
+                    errorMessage = "Esta venda é anterior ao estorno pelo terminal. " +
+                        "O estorno precisa ser feito no portal da adquirente."
+                )
+                is CancelLastSaleResult.RevertFailed -> cancelLastSaleUiState.copy(
+                    isLoading = false,
+                    // A venda continua valida de proposito: sem confirmacao da
+                    // adquirente, cancelar deixaria o cliente cobrado.
+                    errorMessage = "A adquirente não confirmou o estorno: ${result.reason}. " +
+                        "A venda continua válida."
+                )
+            }
+        }
+    }
+
+    fun authorizeCancelLastSale(username: String, password: String) {
+        viewModelScope.launch {
+            when (val result = authorizeWithSupervisorUseCase(
+                Permission.AUTHORIZE_CANCELLATION, username, password
+            )) {
+                is SupervisorAuthorizationResult.Authorized ->
+                    cancelLastSaleUiState = cancelLastSaleUiState.copy(
+                        authorizationRequired = false,
+                        authorizedByUsername = result.authorization.authorizedByUsername,
+                        errorMessage = null
+                    )
+                SupervisorAuthorizationResult.InvalidCredentials ->
+                    cancelLastSaleUiState = cancelLastSaleUiState.copy(
+                        errorMessage = "Credenciais de supervisor inválidas"
+                    )
+                SupervisorAuthorizationResult.InsufficientPermission ->
+                    cancelLastSaleUiState = cancelLastSaleUiState.copy(
+                        errorMessage = "Esse usuário não tem permissão para autorizar"
+                    )
+            }
+        }
+    }
+
+    fun dismissCancelLastSaleAuthorization() {
+        cancelLastSaleUiState = cancelLastSaleUiState.copy(
+            authorizationRequired = false,
+            errorMessage = null
+        )
+    }
+
+    fun resetCancelLastSalePanel() {
+        cancelLastSaleUiState = CancelLastSaleUiState()
     }
 
     fun showCustomerPicker() {

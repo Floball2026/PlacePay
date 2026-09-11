@@ -13,6 +13,10 @@ interface SaleRepository {
     fun observeItems(saleId: Long): Flow<List<SaleItem>>
 
     suspend fun findById(saleId: Long): Sale?
+
+    // Ultima venda concluida da sessao de caixa aberta — alvo do "Cancelar
+    // ultima venda".
+    suspend fun findLastCompleted(cashSessionId: Long): Sale?
     suspend fun getOrCreateOpenSale(cashSessionId: Long, operator: User): Sale
     suspend fun addItem(saleId: Long, product: Product)
     suspend fun changeItemQuantity(saleId: Long, productId: Long, delta: Int)

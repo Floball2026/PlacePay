@@ -8,6 +8,7 @@ import com.example.pdvmaquineta.domain.payment.PaymentGateway
 import com.example.pdvmaquineta.domain.payment.PaymentMethod
 import com.example.pdvmaquineta.domain.payment.PaymentRequest
 import com.example.pdvmaquineta.domain.payment.PaymentResult
+import com.example.pdvmaquineta.domain.payment.RevertResult
 import com.paytime.payossdk.PayOsSdkPayment
 import com.paytime.payossdk.PayOsSdkDevice
 import com.paytime.payossdk.PayOsSdkPrinter
@@ -109,6 +110,64 @@ class PaytimePaymentGateway @Inject constructor(
             .onFailure { Log.w(TAG, "falha na reimpressao do comprovante", it) }
             .isSuccess
     }
+
+    /**
+     * Estorna a transacao na adquirente e CONFIRMA o resultado antes de devolver.
+     *
+     * O caminho feliz e o `revertTransaction` responder `onApproved`. O caminho
+     * que importa e o outro: se der erro ou estourar o tempo, nao da para
+     * assumir nada — a reversao pode ter acontecido do lado da adquirente e a
+     * resposta ter se perdido. Em vez de adivinhar, consultamos a transacao com
+     * `getTransaction` e olhamos o status real. So CANCELLED/REFUNDED contam
+     * como estornado.
+     */
+    override suspend fun revertTransaction(nsuRequest: String): RevertResult =
+        withContext(Dispatchers.Main) {
+            runCatching {
+                val initError = ensureReady()
+                if (initError != null) return@runCatching RevertResult.Failed(initError)
+
+                statusBus.update("Estornando na adquirente...")
+                val error = awaitOp(120_000, "revert") { cb ->
+                    payment.revertTransaction(nsuRequest, cb)
+                }
+                if (error.isBlank()) return@runCatching RevertResult.Reverted
+
+                // Nao confiar no erro sem conferir: pergunta o status real.
+                Log.w(TAG, "revert devolveu erro ($error); consultando status real")
+                when (fetchStatus(nsuRequest)) {
+                    PayOsSdkTransactionStatus.CANCELLED,
+                    PayOsSdkTransactionStatus.REFUNDED -> RevertResult.Reverted
+                    else -> RevertResult.Failed(error)
+                }
+            }.getOrElse { e ->
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                Log.e(TAG, "revert exception", e)
+                RevertResult.Failed(e.message ?: "Falha ao estornar")
+            }.also { statusBus.clear() }
+        }
+
+    /** Status atual da transacao na adquirente, ou null se nao der para saber. */
+    private suspend fun fetchStatus(nsuRequest: String): PayOsSdkTransactionStatus? =
+        withTimeoutOrNull(30_000) {
+            suspendCancellableCoroutine { cont ->
+                payment.getTransaction(nsuRequest, object : ConnectorCallback {
+                    override fun onApproved(p0: Any?) {
+                        val status = (p0 as? PayOsSdkTransactionStore)?.transactionStatus
+                        Log.d(TAG, "getTransaction($nsuRequest) -> $status")
+                        if (cont.isActive) cont.resume(status)
+                    }
+                    override fun onError(p0: ReturnCodes, p1: List<String>, p2: Int?) {
+                        Log.w(TAG, "getTransaction erro: $p0 / ${p1.joinToString("; ")}")
+                        if (cont.isActive) cont.resume(null)
+                    }
+                    override fun onRequest(p0: RequestFlowEnum, p1: Any?) {}
+                    override fun onMessage(p0: NotificationType, p1: String) {
+                        Log.d(TAG, "getTransaction onMessage $p0 / $p1")
+                    }
+                })
+            }
+        }
 
     // configure (1x) -> init (1x) -> update config + tableLoad (1x por processo).
     // Retorna null se pronto; mensagem de erro caso o init falhe.

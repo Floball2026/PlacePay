@@ -28,6 +28,10 @@ interface PaymentRepository {
     // pós-venda em que foi originado.
     suspend fun findApprovedForSale(saleId: Long): Payment?
 
+    // Todos os pagamentos aprovados da venda. O cancelamento precisa de todos
+    // para estornar cada transacao de cartao/PIX.
+    suspend fun approvedPaymentsForSale(saleId: Long): List<Payment>
+
     // Mesma agregação de getApprovedTotalsByMethod, mas por período em vez de
     // sessão de caixa — usado no relatório (Fase 7b). fromMillis/toMillis
     // nulos = sem filtro.

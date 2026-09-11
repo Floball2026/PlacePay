@@ -10,4 +10,15 @@ interface PaymentGateway {
     // Reimprime o comprovante da ultima transacao de cartao/PIX (marcado como
     // REIMPRESSAO). Retorna false se nao houver comprovante em memoria.
     suspend fun reprintLastReceipt(): Boolean = false
+
+    /**
+     * Estorna na adquirente uma transacao ja aprovada, identificada pelo
+     * `nsuRequest` (a chave imutavel da transacao no SDK, gravada na venda).
+     *
+     * So devolve `Reverted` quando a adquirente confirma. Gateways que nao
+     * fazem estorno devolvem `NotApplicable`, e quem chama trata isso como
+     * "nao da pra cancelar por aqui" — nunca como sucesso.
+     */
+    suspend fun revertTransaction(nsuRequest: String): RevertResult =
+        RevertResult.NotApplicable
 }

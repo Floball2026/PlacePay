@@ -58,6 +58,9 @@ class PaymentRepositoryImpl @Inject constructor(
             PaymentMethod.valueOf(it.method) to it.totalCents
         }
 
+    override suspend fun approvedPaymentsForSale(saleId: Long): List<Payment> =
+        paymentDao.findAllApprovedForSale(saleId).map { it.toDomain() }
+
     private fun PaymentEntity.toDomain() = Payment(
         id = id,
         saleId = saleId,
@@ -67,6 +70,7 @@ class PaymentRepositoryImpl @Inject constructor(
         changeCents = changeCents,
         status = PaymentStatus.valueOf(status),
         transactionId = transactionId,
+        nsuRequest = nsuRequest,
         declineReason = declineReason,
         createdAt = createdAt
     )
